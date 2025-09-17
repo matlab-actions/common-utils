@@ -1,18 +1,29 @@
 {
-  "name": "common-utils",
-  "author": "The MathWorks, Inc.",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/matlab-actions/common-utils.git"
-  },
-  "bugs": {
-    "url": "https://github.com/matlab-actions/common-utils/issues"
-  },
-  "homepage": "https://github.com/matlab-actions/common-utils#readme"
+    "name": "common-utils",
+    "author": "The MathWorks, Inc.",
+    "version": "1.0.0",
+    "description": "",
+    "main": "lib/testResultsSummary.js",
+    "scripts": {
+        "clean": "rm -rf dist lib",
+        "format": "prettier --write .",
+        "format-check": "prettier --check .",
+        "build": "tsc",
+        "deps": "bash ./scripts/setupdeps.sh",
+        "package": "ncc build --minify",
+        "test": "jest",
+        "all": "npm test && npm run build && npm run package",
+        "ci": "npm run clean && npm run deps && npm ci && npm run all"
+    },
+    "files": [
+        "lib/"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/matlab-actions/common-utils.git"
+    },
+    "bugs": {
+        "url": "https://github.com/matlab-actions/common-utils/issues"
+    },
+    "homepage": "https://github.com/matlab-actions/common-utils#readme"
 }
