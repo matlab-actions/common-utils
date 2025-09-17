@@ -12,7 +12,7 @@ DISTDIR="$(pwd)/dist"
 mkdir -p $DISTDIR/bin
 
 # Create plugins directory and copy plugin code
-cp -R plugins $(pwd)/dist/
+cp -R ./node_modules/common-utils/plugins $(pwd)/dist/
 
 # Download and extract in a temporary directory
 WORKINGDIR=$(mktemp -d -t rmc_build.XXXXXX)
