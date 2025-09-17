@@ -9,6 +9,7 @@
         "format": "prettier --write .",
         "format-check": "prettier --check .",
         "build": "tsc",
+        "prepare": "npm run build",
         "deps": "bash ./scripts/setupdeps.sh",
         "package": "ncc build --minify",
         "test": "jest",
