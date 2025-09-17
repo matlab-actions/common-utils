@@ -1,0 +1,18 @@
+{
+  "name": "common-utils",
+  "author": "The MathWorks, Inc.",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matlab-actions/common-utils.git"
+  },
+  "bugs": {
+    "url": "https://github.com/matlab-actions/common-utils/issues"
+  },
+  "homepage": "https://github.com/matlab-actions/common-utils#readme"
+}
