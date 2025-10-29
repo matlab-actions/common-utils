@@ -1,0 +1,54 @@
+name: Publish
+on:
+  release:
+    types: published
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Configure git
+        run: |
+          git config user.name 'Release Action'
+          git config user.email '<>'
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 20
+
+      # Update package.json version to match the release tag
+      - name: Update package version
+        run: |
+          git tag -d "${{ github.event.release.tag_name }}"
+          VERSION=$(npm version "${{ github.event.release.tag_name }}" --no-git-tag-version)
+          git add package.json package-lock.json
+          git commit -m "[skip ci] Bump $VERSION"
+          git push origin HEAD:main
+          
+      # Build and test
+      - name: Perform npm tasks
+        run: npm run ci
+
+      # Create release with built artifacts
+      - name: Create release artifacts
+        run: |
+          # Validate semantic versioning
+          longVersion="${{github.event.release.tag_name}}"
+          echo "Preparing release for version $longVersion"
+          [[ $longVersion == v[0-9]*.[0-9]*.[0-9]* ]] || (echo "must follow semantic versioning" && exit 1)
+
+          # Add the built artifacts (adjust folder names as needed)
+          git add --force dist lib
+
+          # Create commit with built code
+          MESSAGE="Build for $(git rev-parse --short HEAD)"
+          git commit --allow-empty -m "$MESSAGE"
+          
+          # Tag this commit with the release version
+          git tag -f -a -m "Release $longVersion" $longVersion
+          
+          # Push the release tag
+          git push -f origin $longVersion
