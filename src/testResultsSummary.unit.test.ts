@@ -34,7 +34,7 @@ describe("Artifact Processing Tests", () => {
 
         copyTestDataFile(osInfo.osName, runnerTemp, runId, actionName);
 
-        testResultsData = testResultsSummary.getTestResults(runnerTemp, runId, actionName, workspace);
+        testResultsData = testResultsSummary.getTestResults(runnerTemp, runId, workspace);
         testResults = testResultsData.TestResults;
         stats = testResultsData.Stats;
     });
@@ -58,7 +58,7 @@ describe("Artifact Processing Tests", () => {
             osName,
             "matlabTestResults.json",
         );
-        const destinationFilePath = path.join(runnerTemp, "matlabTestResults_" + runId + "_" + actionName + ".json");
+        const destinationFilePath = path.join(runnerTemp, "matlabTestResults" + runId + ".json");
 
         try {
             fs.copyFileSync(sourceFilePath, destinationFilePath);
@@ -363,7 +363,7 @@ describe("Error Handling Tests", () => {
         process.env.GITHUB_ACTION = "run-tests";
 
         // Create a file with invalid JSON
-        const invalidJsonPath = path.join(process.env.RUNNER_TEMP, "matlabTestResults_123_run-tests.json");
+        const invalidJsonPath = path.join(process.env.RUNNER_TEMP, "matlabTestResults123.json");
         fs.writeFileSync(invalidJsonPath, "{ invalid json content");
 
         try {
@@ -413,7 +413,7 @@ describe("Error Handling Tests", () => {
         process.env.GITHUB_ACTION = "run-tests";
 
         // Create a valid JSON file
-        const validJsonPath = path.join(process.env.RUNNER_TEMP, "matlabTestResults_123_run-tests.json");
+        const validJsonPath = path.join(process.env.RUNNER_TEMP, "matlabTestResults123.json");
         fs.writeFileSync(validJsonPath, "[]"); // Empty array - valid JSON
 
         try {

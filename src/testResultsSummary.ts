@@ -199,7 +199,6 @@ export function getStatusEmoji(status: MatlabTestStatus): string {
 export function getTestResults(
     runnerTemp: string,
     runId: string,
-    actionName: string,
     workspace: string,
 ): TestResultsData {
     const testResults: MatlabTestFile[][] = [];
@@ -215,20 +214,7 @@ export function getTestResults(
         TestResults: testResults,
         Stats: stats,
     };
-    const resultsPath = path.join(runnerTemp, `matlabTestResults_${runId}_${actionName}.json`);
-
-    try {
-        const fs = require('fs');
-        core.info(`Contents of runnerTemp directory (${runnerTemp}):`);
-        const files = fs.readdirSync(runnerTemp);
-        files.forEach((file: string) => {
-            const filePath = path.join(runnerTemp, file);
-            const stats = fs.statSync(filePath);
-            core.info(`- ${file} (${stats.isDirectory() ? 'directory' : 'file'}, ${stats.size} bytes)`);
-        });
-    } catch (listError) {
-        core.info(`Error listing files in runnerTemp directory: ${listError}`);
-    }
+    const resultsPath = path.join(runnerTemp, `matlabTestResults${runId}.json`);
 
     if (existsSync(resultsPath)) {
         try {
@@ -263,8 +249,6 @@ export function getTestResults(
                 );
             }
         }
-    } else {
-        console.warn(`Test results summary file ${resultsPath} does not exist.`);
     }
 
     return testResultsData;
