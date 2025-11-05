@@ -367,7 +367,7 @@ describe("Error Handling Tests", () => {
         fs.writeFileSync(invalidJsonPath, "{ invalid json content");
 
         try {
-            const result = testResultsSummary.getTestResults(process.env.RUNNER_TEMP, process.env.GITHUB_RUN_ID, process.env.GITHUB_ACTION, "");
+            const result = testResultsSummary.getTestResults(process.env.RUNNER_TEMP, process.env.GITHUB_RUN_ID, "");
 
             // Should return empty results
             expect(result.TestResults).toEqual([]);
@@ -417,7 +417,7 @@ describe("Error Handling Tests", () => {
         fs.writeFileSync(validJsonPath, "[]"); // Empty array - valid JSON
 
         try {
-            const result = testResultsSummary.getTestResults(process.env.RUNNER_TEMP, process.env.GITHUB_RUN_ID, process.env.GITHUB_ACTION, "");
+            const result = testResultsSummary.getTestResults(process.env.RUNNER_TEMP, process.env.GITHUB_RUN_ID, "");
 
             // Should still return results even if deletion fails
             expect(result).toBeDefined();
