@@ -27,13 +27,14 @@ describe("Artifact Processing Tests", () => {
 
     beforeAll(() => {
         const runnerTemp = path.join(__dirname, "..");
-        const runId = "";
+        const runId = "123";
+        const actionName = "run-tests";
         const osInfo = getOSInfo();
         const workspace = path.join(osInfo.workspaceParent, "workspace");
 
-        copyTestDataFile(osInfo.osName, runnerTemp);
+        copyTestDataFile(osInfo.osName, runnerTemp, runId, actionName);
 
-        testResultsData = testResultsSummary.getTestResults(runnerTemp, runId, workspace);
+        testResultsData = testResultsSummary.getTestResults(runnerTemp, runId, actionName, workspace);
         testResults = testResultsData.TestResults;
         stats = testResultsData.Stats;
     });
@@ -48,7 +49,7 @@ describe("Artifact Processing Tests", () => {
         throw new Error(`Unsupported OS: ${os}`);
     }
 
-    function copyTestDataFile(osName: string, runnerTemp: string) {
+    function copyTestDataFile(osName: string, runnerTemp: string, runId: string, actionName: string) {
         const sourceFilePath = path.join(
             __dirname,
             "test-data",
@@ -57,7 +58,7 @@ describe("Artifact Processing Tests", () => {
             osName,
             "matlabTestResults.json",
         );
-        const destinationFilePath = path.join(runnerTemp!, "matlabTestResults.json");
+        const destinationFilePath = path.join(runnerTemp, "matlabTestResults_" + runId + "_" + actionName + ".json");
 
         try {
             fs.copyFileSync(sourceFilePath, destinationFilePath);
@@ -358,14 +359,15 @@ describe("Error Handling Tests", () => {
 
         // Set up environment variables
         process.env.RUNNER_TEMP = path.join(__dirname, "..");
-        process.env.GITHUB_RUN_ID = "";
+        process.env.GITHUB_RUN_ID = "123";
+        process.env.GITHUB_ACTION = "run-tests";
 
         // Create a file with invalid JSON
-        const invalidJsonPath = path.join(process.env.RUNNER_TEMP, "matlabTestResults.json");
+        const invalidJsonPath = path.join(process.env.RUNNER_TEMP, "matlabTestResults_123_run-tests.json");
         fs.writeFileSync(invalidJsonPath, "{ invalid json content");
 
         try {
-            const result = testResultsSummary.getTestResults(process.env.RUNNER_TEMP!, process.env.GITHUB_RUN_ID!, "");
+            const result = testResultsSummary.getTestResults(process.env.RUNNER_TEMP, process.env.GITHUB_RUN_ID, process.env.GITHUB_ACTION, "");
 
             // Should return empty results
             expect(result.TestResults).toEqual([]);
@@ -407,14 +409,15 @@ describe("Error Handling Tests", () => {
 
         // Set up environment variables
         process.env.RUNNER_TEMP = path.join(__dirname, "..");
-        process.env.GITHUB_RUN_ID = "";
+        process.env.GITHUB_RUN_ID = "123";
+        process.env.GITHUB_ACTION = "run-tests";
 
         // Create a valid JSON file
-        const validJsonPath = path.join(process.env.RUNNER_TEMP, "matlabTestResults.json");
+        const validJsonPath = path.join(process.env.RUNNER_TEMP, "matlabTestResults_123_run-tests.json");
         fs.writeFileSync(validJsonPath, "[]"); // Empty array - valid JSON
 
         try {
-            const result = testResultsSummary.getTestResults(process.env.RUNNER_TEMP!, process.env.GITHUB_RUN_ID!, "");
+            const result = testResultsSummary.getTestResults(process.env.RUNNER_TEMP, process.env.GITHUB_RUN_ID, process.env.GITHUB_ACTION, "");
 
             // Should still return results even if deletion fails
             expect(result).toBeDefined();

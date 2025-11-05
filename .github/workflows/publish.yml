@@ -29,6 +29,7 @@ jobs:
           VERSION=$(npm version "${{ github.event.release.tag_name }}" --no-git-tag-version)
           git add package.json package-lock.json
           git commit -m "[skip ci] Bump $VERSION"
+          git pull --rebase origin main
           git push origin HEAD:main
           
       # Build and test

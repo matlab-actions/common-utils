@@ -199,6 +199,7 @@ export function getStatusEmoji(status: MatlabTestStatus): string {
 export function getTestResults(
     runnerTemp: string,
     runId: string,
+    actionName: string,
     workspace: string,
 ): TestResultsData {
     const testResults: MatlabTestFile[][] = [];
@@ -214,7 +215,7 @@ export function getTestResults(
         TestResults: testResults,
         Stats: stats,
     };
-    const resultsPath = path.join(runnerTemp, `matlabTestResults${runId}.json`);
+    const resultsPath = path.join(runnerTemp, `matlabTestResults_${runId}_${actionName}.json`);
 
     if (existsSync(resultsPath)) {
         try {
