@@ -21,7 +21,9 @@ jobs:
         with:
           node-version: 20
 
-      # Update package.json version to match the release tag
+      # Call `npm version`. It increments the version and commits the changes.
+      # We'll save the output (new version string) for use in the following
+      # steps
       - name: Update package version
         id: update-package-version
         run: |
@@ -29,32 +31,47 @@ jobs:
           VERSION=$(npm version "${{ github.event.release.tag_name }}" --no-git-tag-version)
           git add package.json package-lock.json
           git commit -m "[skip ci] Bump $VERSION"
-          git pull --rebase origin main
           git push origin HEAD:main
           
-      # Build and test
+      # Now carry on, business as usual
       - name: Perform npm tasks
         run: npm run ci
 
-      # Create release with built artifacts
-      - name: Create release artifacts
+      # Finally, create a detached commit containing the built artifacts and tag
+      # it with the release. Note: the fact that the branch is locally updated
+      # will not be relayed (pushed) to origin
+      - name: Commit to release branch
         id: release_info
         run: |
-          # Validate semantic versioning
+          # Check for semantic versioning
           longVersion="${{github.event.release.tag_name}}"
           echo "Preparing release for version $longVersion"
-          [[ $longVersion == v[0-9]*.[0-9]*.[0-9]* ]] || (echo "must follow semantic versioning" && exit 1)
+          [[ $longVersion == v[0-9]*.[0-9]*.[0-9]* ]]  || (echo "must follow semantic versioning" && exit 1)
+          majorVersion=$(echo ${longVersion%.*.*})
+          minorVersion=$(echo ${longVersion%.*})
 
-          # Add the built artifacts (adjust folder names as needed)
+          # Add the built artifacts. Using --force because dist/lib should be in
+          # .gitignore
           git add --force dist lib
 
-          # Create commit with built code
+          # Make the commit
           MESSAGE="Build for $(git rev-parse --short HEAD)"
           git commit --allow-empty -m "$MESSAGE"
-          
-          # Tag this commit with the release version
           git tag -f -a -m "Release $longVersion" $longVersion
+
+          # Get the commit of the tag you just released
+          commitHash=$(git rev-list -n 1 $longVersion)
           
-          # Push the release tag
-          echo "Pushing new tag"
+          # Delete the old major and minor version tags locally
+          git tag -d $majorVersion || true
+          git tag -d $minorVersion || true
+          
+          # Make new major and minor version tags locally that point to the commit you got from the "git rev-list" above
+          git tag -f $majorVersion $commitHash
+          git tag -f $minorVersion $commitHash
+          
+          # Force push the new minor version tag to overwrite the old tag remotely
+          echo "Pushing new tags"
           git push -f origin $longVersion
+          git push -f origin $majorVersion
+          git push -f origin $minorVersion
