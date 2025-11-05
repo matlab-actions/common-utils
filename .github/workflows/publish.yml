@@ -9,6 +9,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.update-package-version.outputs.version }}
     steps:
       - uses: actions/checkout@v5
       - name: Configure git
@@ -21,6 +23,7 @@ jobs:
 
       # Update package.json version to match the release tag
       - name: Update package version
+        id: update-package-version
         run: |
           git tag -d "${{ github.event.release.tag_name }}"
           VERSION=$(npm version "${{ github.event.release.tag_name }}" --no-git-tag-version)
@@ -34,6 +37,7 @@ jobs:
 
       # Create release with built artifacts
       - name: Create release artifacts
+        id: release_info
         run: |
           # Validate semantic versioning
           longVersion="${{github.event.release.tag_name}}"
@@ -51,4 +55,5 @@ jobs:
           git tag -f -a -m "Release $longVersion" $longVersion
           
           # Push the release tag
+          echo "Pushing new tag"
           git push -f origin $longVersion

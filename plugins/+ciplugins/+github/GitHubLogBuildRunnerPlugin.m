@@ -1,6 +1,6 @@
 classdef GitHubLogBuildRunnerPlugin < matlab.buildtool.plugins.BuildRunnerPlugin
 
-%   Copyright 2024 The MathWorks, Inc.
+%   Copyright 2024-25 The MathWorks, Inc.
 
     methods (Access=protected)
 
