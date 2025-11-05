@@ -5,7 +5,7 @@ classdef TestResultsSummaryPluginService < matlab.buildtool.internal.services.ci
         function plugins = providePlugins(~, ~)
             % Check if MATLAB Test license is available
             if license('test', 'matlab_test')
-                plugins = ciplugins.github.TestResultsSummaryPlugin();
+                plugins = testframework.TestResultsSummaryPlugin();
             else
                 plugins = matlab.unittest.plugins.TestRunnerPlugin.empty(1,0);
             end

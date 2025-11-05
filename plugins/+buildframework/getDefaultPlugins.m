@@ -7,14 +7,14 @@ arguments
 end
 
 if isMATLABReleaseOlderThan("R2025b")
-    reportPlugin = ciplugins.github.BuildSummaryPlugin();
+    reportPlugin = buildframework.BuildSummaryPlugin();
 else
-    reportPlugin = ciplugins.github.ParallelizableBuildSummaryPlugin();
+    reportPlugin = buildframework.ParallelizableBuildSummaryPlugin();
 end
 
 plugins = [ ...
     matlab.buildtool.internal.getFactoryDefaultPlugins(pluginProviderData) ...
-    ciplugins.github.GitHubLogBuildRunnerPlugin() ...
+    buildframework.GitHubLogPlugin() ...
     reportPlugin ...
 ];
 end

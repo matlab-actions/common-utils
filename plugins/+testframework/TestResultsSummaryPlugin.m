@@ -24,7 +24,7 @@ classdef TestResultsSummaryPlugin < matlab.unittest.plugins.TestRunnerPlugin
 
             [fID, msg] = fopen(testArtifactFile, "w");
             if fID == -1
-                warning("ciplugins:github:TestResultsSummaryPlugin:UnableToOpenFile","Could not open a file for GitHub tests result table due to: %s", msg);
+                warning("testframework:TestResultsSummaryPlugin:UnableToOpenFile","Could not open a file for GitHub tests result table due to: %s", msg);
             else
                 closeFile = onCleanup(@()fclose(fID));
                 fprintf(fID, '%s', JsonTestResults);

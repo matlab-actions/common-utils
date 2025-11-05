@@ -1,4 +1,4 @@
-classdef GitHubLogBuildRunnerPlugin < matlab.buildtool.plugins.BuildRunnerPlugin
+classdef GitHubLogPlugin < matlab.buildtool.plugins.BuildRunnerPlugin
 
 %   Copyright 2024-25 The MathWorks, Inc.
 
