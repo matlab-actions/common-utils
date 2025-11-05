@@ -142,12 +142,12 @@ describe("Artifact Processing Tests", () => {
         expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
             1,
-            expect.stringContaining("MATLAB Test Results"),
+            expect.stringContaining("MATLAB Test Results (" + actionName + ")"),
         );
         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
             1,
             expect.stringContaining(
-                '<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md"',
+                '<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"',
             ),
         );
         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
