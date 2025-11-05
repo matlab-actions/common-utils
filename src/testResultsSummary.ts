@@ -217,6 +217,19 @@ export function getTestResults(
     };
     const resultsPath = path.join(runnerTemp, `matlabTestResults_${runId}_${actionName}.json`);
 
+    try {
+        const fs = require('fs');
+        console.log(`Contents of runnerTemp directory (${runnerTemp}):`);
+        const files = fs.readdirSync(runnerTemp);
+        files.forEach((file: string) => {
+            const filePath = path.join(runnerTemp, file);
+            const stats = fs.statSync(filePath);
+            console.log(`- ${file} (${stats.isDirectory() ? 'directory' : 'file'}, ${stats.size} bytes)`);
+        });
+    } catch (listError) {
+        console.error(`Error listing files in runnerTemp directory: ${listError}`);
+    }
+    
     if (existsSync(resultsPath)) {
         try {
             const testArtifact = JSON.parse(readFileSync(resultsPath, "utf8"));
@@ -250,6 +263,8 @@ export function getTestResults(
                 );
             }
         }
+    } else {
+        console.warn(`Test results summary file ${resultsPath} does not exist.`);
     }
 
     return testResultsData;
