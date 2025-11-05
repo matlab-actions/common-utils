@@ -200,25 +200,26 @@ export function getTestResults(
     runnerTemp: string,
     runId: string,
     workspace: string,
-): TestResultsData {
-    const testResults: MatlabTestFile[][] = [];
-    const stats: TestStatistics = {
-        Total: 0,
-        Passed: 0,
-        Failed: 0,
-        Incomplete: 0,
-        NotRun: 0,
-        Duration: 0,
-    };
-    const testResultsData: TestResultsData = {
-        TestResults: testResults,
-        Stats: stats,
-    };
+): TestResultsData | null {
+    let testResultsData = null;
     const resultsPath = path.join(runnerTemp, `matlabTestResults${runId}.json`);
 
     if (existsSync(resultsPath)) {
         try {
             const testArtifact = JSON.parse(readFileSync(resultsPath, "utf8"));
+            const testResults: MatlabTestFile[][] = [];
+            const stats: TestStatistics = {
+                Total: 0,
+                Passed: 0,
+                Failed: 0,
+                Incomplete: 0,
+                NotRun: 0,
+                Duration: 0,
+            };
+            testResultsData = {
+                TestResults: testResults,
+                Stats: stats,
+            };
 
             for (const jsonTestSessionResults of testArtifact) {
                 const testSessionResults: MatlabTestFile[] = [];

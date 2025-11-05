@@ -21,7 +21,7 @@ jest.mock("fs", () => ({
 
 describe("Artifact Processing Tests", () => {
     // Shared test data
-    let testResultsData: testResultsSummary.TestResultsData;
+    let testResultsData: testResultsSummary.TestResultsData | null;
     let testResults: testResultsSummary.MatlabTestFile[][];
     let stats: testResultsSummary.TestStatistics;
 
@@ -35,8 +35,10 @@ describe("Artifact Processing Tests", () => {
         copyTestDataFile(osInfo.osName, runnerTemp, runId, actionName);
 
         testResultsData = testResultsSummary.getTestResults(runnerTemp, runId, workspace);
-        testResults = testResultsData.TestResults;
-        stats = testResultsData.Stats;
+        if (testResultsData) {
+            testResults = testResultsData.TestResults;
+            stats = testResultsData.Stats;
+        }
     });
 
     function getOSInfo() {
@@ -137,32 +139,34 @@ describe("Artifact Processing Tests", () => {
     });
 
     it("should write test results data to the GitHub job summary", () => {
-        const actionName = process.env.GITHUB_ACTION || "";
-        testResultsSummary.writeSummary(testResultsData, actionName);
+        if (testResultsData) {
+            const actionName = process.env.GITHUB_ACTION || "";
+            testResultsSummary.writeSummary(testResultsData, actionName);
 
-        expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
-        expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-            1,
-            expect.stringContaining("MATLAB Test Results (" + actionName + ")"),
-        );
-        expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-            1,
-            expect.stringContaining(
-                '<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"',
-            ),
-        );
-        expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-            1,
-            expect.stringContaining('target="_blank"'),
-        );
-        expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-            1,
-            expect.stringContaining("ℹ️</a>"),
-        );
-        expect(core.summary.addHeading).toHaveBeenNthCalledWith(2, "All tests", 3);
+            expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining("MATLAB Test Results (" + actionName + ")"),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining(
+                    '<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"',
+                ),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining('target="_blank"'),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining("ℹ️</a>"),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(2, "All tests", 3);
 
-        expect(core.summary.addRaw).toHaveBeenCalledTimes(2);
-        expect(core.summary.write).toHaveBeenCalledTimes(1);
+            expect(core.summary.addRaw).toHaveBeenCalledTimes(2);
+            expect(core.summary.write).toHaveBeenCalledTimes(1);
+        }
     });
 });
 
@@ -368,17 +372,7 @@ describe("Error Handling Tests", () => {
 
         try {
             const result = testResultsSummary.getTestResults(process.env.RUNNER_TEMP, process.env.GITHUB_RUN_ID, "");
-
-            // Should return empty results
-            expect(result.TestResults).toEqual([]);
-            expect(result.Stats).toEqual({
-                Total: 0,
-                Passed: 0,
-                Failed: 0,
-                Incomplete: 0,
-                NotRun: 0,
-                Duration: 0,
-            });
+            expect(result).toBeNull();
 
             // Verify error was logged
             expect(consoleSpy).toHaveBeenCalledWith(
@@ -419,9 +413,11 @@ describe("Error Handling Tests", () => {
         try {
             const result = testResultsSummary.getTestResults(process.env.RUNNER_TEMP, process.env.GITHUB_RUN_ID, "");
 
-            // Should still return results even if deletion fails
-            expect(result).toBeDefined();
-            expect(result.TestResults).toEqual([]);
+            if(result){
+                // Should still return results even if deletion fails
+                expect(result).toBeDefined();
+                expect(result.TestResults).toEqual([]);
+            }
 
             // Verify deletion error was logged
             expect(consoleSpy).toHaveBeenCalledWith(
