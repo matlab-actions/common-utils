@@ -1,4 +1,3 @@
-% rename and restructure all plugins
 classdef BuildSummaryPlugin < matlab.buildtool.plugins.BuildRunnerPlugin
 
 %   Copyright 2024-25 The MathWorks, Inc.
