@@ -1,19 +1,19 @@
-// Copyright 2025 The MathWorks, Inc.
+    // Copyright 2025 The MathWorks, Inc.
 
-import { readFileSync, unlinkSync, existsSync } from "fs";
-import * as path from "path";
-import * as core from "@actions/core";
+    import { readFileSync, unlinkSync, existsSync } from "fs";
+    import * as path from "path";
+    import * as core from "@actions/core";
 
-export enum MatlabTestStatus {
-    PASSED = "PASSED",
-    FAILED = "FAILED",
-    INCOMPLETE = "INCOMPLETE",
-    NOT_RUN = "NOT_RUN",
-}
+    export enum MatlabTestStatus {
+        PASSED = "PASSED",
+        FAILED = "FAILED",
+        INCOMPLETE = "INCOMPLETE",
+        NOT_RUN = "NOT_RUN",
+    }
 
-interface MatlabTestDiagnostics {
-    Event: string;
-    Report: string;
+    interface MatlabTestDiagnostics {
+        Event: string;
+        Report: string;
 }
 
 interface MatlabTestCase {
