@@ -7,8 +7,7 @@ export function writeSummary(taskSummaryTableRows: string[][], actionName: strin
     try {
         core.summary
             .addHeading("MATLAB Build Results (" + actionName + ") ")
-            .addTable(taskSummaryTableRows)
-            .write();
+            .addTable(taskSummaryTableRows);
     } catch (e) {
         console.error('An error occurred while adding the build results table to the summary:', e);
     }
@@ -66,7 +65,5 @@ export function processAndDisplayBuildSummary(
             }
         }
         writeSummary(taskSummaryTable, actionName);
-    } else {
-        core.info(`Build summary data not created.`);
     }
 }

@@ -147,8 +147,7 @@ export function writeSummary(
             .addHeading("MATLAB Test Results (" + actionName + ") " + helpLink)
             .addRaw(header, true)
             .addHeading("All tests", 3)
-            .addRaw(detailedResults, true)
-            .write();
+            .addRaw(detailedResults, true);
     } catch (e) {
         console.error("An error occurred while adding the test results to the summary:", e);
     }
