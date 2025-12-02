@@ -61,6 +61,77 @@ export interface TestResultsData {
     Stats: TestStatistics;
 }
 
+export function processAndDisplayTestSummary(
+    runnerTemp: string,
+    runId: string,
+    actionName: string,
+    workspace: string,
+) {
+    const testResultsData = getTestResults(runnerTemp, runId, workspace);
+    if(testResultsData) {
+        writeSummary(testResultsData, actionName);
+    }
+}
+
+export function getTestResults(
+    runnerTemp: string,
+    runId: string,
+    workspace: string,
+): TestResultsData | null {
+    let testResultsData = null;
+    const resultsPath = path.join(runnerTemp, `matlabTestResults${runId}.json`);
+
+    if (existsSync(resultsPath)) {
+        try {
+            const testArtifact = JSON.parse(readFileSync(resultsPath, "utf8"));
+            const testResults: MatlabTestFile[][] = [];
+            const stats: TestStatistics = {
+                Total: 0,
+                Passed: 0,
+                Failed: 0,
+                Incomplete: 0,
+                NotRun: 0,
+                Duration: 0,
+            };
+            testResultsData = {
+                TestResults: testResults,
+                Stats: stats,
+            };
+
+            for (const jsonTestSessionResults of testArtifact) {
+                const testSessionResults: MatlabTestFile[] = [];
+                const map = new Map<string, MatlabTestFile>();
+
+                const testCases = Array.isArray(jsonTestSessionResults)
+                    ? jsonTestSessionResults
+                    : [jsonTestSessionResults];
+
+                for (const jsonTestCase of testCases) {
+                    processTestCase(testSessionResults, jsonTestCase, map, stats, workspace);
+                }
+
+                testResults.push(testSessionResults);
+            }
+        } catch (e) {
+            console.error(
+                "An error occurred while reading the test results summary file ${resultsPath}:",
+                e,
+            );
+        } finally {
+            try {
+                unlinkSync(resultsPath);
+            } catch (e) {
+                console.error(
+                    `An error occurred while trying to delete the test results summary file ${resultsPath}:`,
+                    e,
+                );
+            }
+        }
+    }
+
+    return testResultsData;
+}
+
 export function writeSummary(
     testResultsData: TestResultsData,
     actionName: string,
@@ -196,65 +267,6 @@ export function getStatusEmoji(status: MatlabTestStatus): string {
     }
 }
 
-export function getTestResults(
-    runnerTemp: string,
-    runId: string,
-    workspace: string,
-): TestResultsData | null {
-    let testResultsData = null;
-    const resultsPath = path.join(runnerTemp, `matlabTestResults${runId}.json`);
-
-    if (existsSync(resultsPath)) {
-        try {
-            const testArtifact = JSON.parse(readFileSync(resultsPath, "utf8"));
-            const testResults: MatlabTestFile[][] = [];
-            const stats: TestStatistics = {
-                Total: 0,
-                Passed: 0,
-                Failed: 0,
-                Incomplete: 0,
-                NotRun: 0,
-                Duration: 0,
-            };
-            testResultsData = {
-                TestResults: testResults,
-                Stats: stats,
-            };
-
-            for (const jsonTestSessionResults of testArtifact) {
-                const testSessionResults: MatlabTestFile[] = [];
-                const map = new Map<string, MatlabTestFile>();
-
-                const testCases = Array.isArray(jsonTestSessionResults)
-                    ? jsonTestSessionResults
-                    : [jsonTestSessionResults];
-
-                for (const jsonTestCase of testCases) {
-                    processTestCase(testSessionResults, jsonTestCase, map, stats, workspace);
-                }
-
-                testResults.push(testSessionResults);
-            }
-        } catch (e) {
-            console.error(
-                "An error occurred while reading the test results summary file ${resultsPath}:",
-                e,
-            );
-        } finally {
-            try {
-                unlinkSync(resultsPath);
-            } catch (e) {
-                console.error(
-                    `An error occurred while trying to delete the test results summary file ${resultsPath}:`,
-                    e,
-                );
-            }
-        }
-    }
-
-    return testResultsData;
-}
-
 function processTestCase(
     testSessionResults: MatlabTestFile[],
     jsonTestCase: MatlabTestCaseJson,
@@ -296,24 +308,6 @@ function processTestCase(
     updateStats(testCase, stats);
 }
 
-function incrementDuration(testFile: MatlabTestFile, testCaseDuration: number): void {
-    testFile.Duration = (testFile.Duration || 0) + testCaseDuration;
-}
-
-function updateFileStatus(testFile: MatlabTestFile, testCase: MatlabTestCase): void {
-    if (testFile.Status !== MatlabTestStatus.FAILED) {
-        if (testCase.Status === MatlabTestStatus.FAILED) {
-            testFile.Status = MatlabTestStatus.FAILED;
-        } else if (testFile.Status !== MatlabTestStatus.INCOMPLETE) {
-            if (testCase.Status === MatlabTestStatus.INCOMPLETE) {
-                testFile.Status = MatlabTestStatus.INCOMPLETE;
-            } else if (testCase.Status === MatlabTestStatus.PASSED) {
-                testFile.Status = MatlabTestStatus.PASSED;
-            }
-        }
-    }
-}
-
 function determineTestStatus(testResult: MatlabTestResultJson): MatlabTestStatus {
     switch (true) {
         case testResult.Failed:
@@ -331,6 +325,24 @@ function processDiagnostics(diagnostics: MatlabTestDiagnostics | MatlabTestDiagn
     if (!diagnostics) return [];
 
     return Array.isArray(diagnostics) ? diagnostics : [diagnostics];
+}
+
+function incrementDuration(testFile: MatlabTestFile, testCaseDuration: number): void {
+    testFile.Duration = (testFile.Duration || 0) + testCaseDuration;
+}
+
+function updateFileStatus(testFile: MatlabTestFile, testCase: MatlabTestCase): void {
+    if (testFile.Status !== MatlabTestStatus.FAILED) {
+        if (testCase.Status === MatlabTestStatus.FAILED) {
+            testFile.Status = MatlabTestStatus.FAILED;
+        } else if (testFile.Status !== MatlabTestStatus.INCOMPLETE) {
+            if (testCase.Status === MatlabTestStatus.INCOMPLETE) {
+                testFile.Status = MatlabTestStatus.INCOMPLETE;
+            } else if (testCase.Status === MatlabTestStatus.PASSED) {
+                testFile.Status = MatlabTestStatus.PASSED;
+            }
+        }
+    }
 }
 
 function updateStats(testCase: MatlabTestCase, stats: TestStatistics): void {
