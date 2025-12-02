@@ -33,7 +33,7 @@ export async function generateScript(workspaceDir: string, command: string): Pro
     const temporaryDirectory = await fs.mkdtemp(path.join(os.tmpdir(), "run_matlab_command-"));
 
     const scriptPath = path.join(temporaryDirectory, scriptName + ".m");
-    await fs.writeFile(scriptPath, script.prepare(command), {
+    await fs.writeFile(scriptPath, script.cdAndCall(command), {
         encoding: "utf8",
     });
 

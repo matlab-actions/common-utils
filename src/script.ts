@@ -1,19 +1,14 @@
 // Copyright 2020-2025 The MathWorks, Inc.
 
-import * as path from "path";
-
 /**
- * Generate MATLAB command for changing directories, adding plugins to path and calling a command in it.
+ * Generate MATLAB command for changing directories and calling a command in it.
  *
  * @param dir Directory to change to.
  * @param command Command to run in directory.
  * @returns MATLAB command.
  */
-export function prepare(command: string): string {
-    const pluginsPath = path.join(__dirname, "plugins").replaceAll("'","''");
-    return `cd(getenv('MW_ORIG_WORKING_FOLDER')); ` +
-        `addpath('` + pluginsPath + `'); `
-        + command;
+export function cdAndCall(command: string): string {
+    return `cd(getenv('MW_ORIG_WORKING_FOLDER')); ${command}`;
 }
 
 /**
