@@ -39,7 +39,7 @@ describe('summaryGeneration', () => {
         ];
         const actionName = 'run-build';
 
-        buildSummary.writeSummary(mockTableRows, actionName);
+        buildSummary.addSummary(mockTableRows, actionName);
 
         expect(core.summary.addHeading).toHaveBeenCalledTimes(1);
         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
