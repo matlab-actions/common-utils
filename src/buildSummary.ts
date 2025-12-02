@@ -3,7 +3,7 @@ import * as core from "@actions/core";
 import { join } from 'path';
 import { readFileSync, unlinkSync, existsSync } from 'fs';
 
-export function writeSummary(taskSummaryTableRows: string[][], actionName: string) {
+export function addSummary(taskSummaryTableRows: string[][], actionName: string) {
     try {
         core.summary
             .addHeading("MATLAB Build Results (" + actionName + ") ")
@@ -40,7 +40,7 @@ export function interpretSkipReason(skipReason: string){
     }
 }
 
-export function processAndDisplayBuildSummary(
+export function processAndAddBuildSummary(
     runnerTemp: string,
     runId: string,
     actionName: string
@@ -64,6 +64,6 @@ export function processAndDisplayBuildSummary(
                 console.error(`An error occurred while trying to delete the build summary file ${filePath}:`, e);
             }
         }
-        writeSummary(taskSummaryTable, actionName);
+        addSummary(taskSummaryTable, actionName);
     }
 }

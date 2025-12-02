@@ -61,7 +61,7 @@ export interface TestResultsData {
     Stats: TestStatistics;
 }
 
-export function processAndDisplayTestSummary(
+export function processAndAddTestSummary(
     runnerTemp: string,
     runId: string,
     actionName: string,
@@ -69,7 +69,7 @@ export function processAndDisplayTestSummary(
 ) {
     const testResultsData = getTestResults(runnerTemp, runId, workspace);
     if(testResultsData) {
-        writeSummary(testResultsData, actionName);
+        addSummary(testResultsData, actionName);
     }
 }
 
@@ -132,7 +132,7 @@ export function getTestResults(
     return testResultsData;
 }
 
-export function writeSummary(
+export function addSummary(
     testResultsData: TestResultsData,
     actionName: string,
 ) {

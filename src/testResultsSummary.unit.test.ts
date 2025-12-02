@@ -10,7 +10,6 @@ jest.mock("@actions/core", () => ({
     summary: {
         addHeading: jest.fn().mockReturnThis(),
         addRaw: jest.fn().mockReturnThis(),
-        write: jest.fn().mockReturnThis(),
     },
 }));
 
@@ -141,7 +140,7 @@ describe("Artifact Processing Tests", () => {
     it("should write test results data to the GitHub job summary", () => {
         if (testResultsData) {
             const actionName = process.env.GITHUB_ACTION || "";
-            testResultsSummary.writeSummary(testResultsData, actionName);
+            testResultsSummary.addSummary(testResultsData, actionName);
 
             expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
             expect(core.summary.addHeading).toHaveBeenNthCalledWith(
@@ -165,7 +164,6 @@ describe("Artifact Processing Tests", () => {
             expect(core.summary.addHeading).toHaveBeenNthCalledWith(2, "All tests", 3);
 
             expect(core.summary.addRaw).toHaveBeenCalledTimes(2);
-            expect(core.summary.write).toHaveBeenCalledTimes(1);
         }
     });
 });
@@ -322,7 +320,7 @@ describe("HTML Structure Tests", () => {
 });
 
 describe("Error Handling Tests", () => {
-    it("should handle errors gracefully in writeSummary", () => {
+    it("should handle errors gracefully in addSummary", () => {
         const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
         // Mock addHeading to throw an error
@@ -346,7 +344,7 @@ describe("Error Handling Tests", () => {
 
         // This should not throw, but should log the error
         expect(() => {
-            testResultsSummary.writeSummary(mockTestResultsData, "mockAction");
+            testResultsSummary.addSummary(mockTestResultsData, "mockAction");
         }).not.toThrow();
 
         // Verify error was logged
