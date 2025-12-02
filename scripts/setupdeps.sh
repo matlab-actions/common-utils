@@ -11,7 +11,11 @@ mkdir -p $DISTDIR/bin
 cp -R ./node_modules/common-utils/plugins $(pwd)/dist/
 
 # Copy action specific plugins to dist, if any
-cp -R ./plugins $(pwd)/dist/
+if [ -d "./plugins" ]; then
+    cp -R ./plugins $(pwd)/dist/
+else
+    echo "No action specific plugins found to be copied."
+fi
 
 # Download and extract in a temporary directory
 WORKINGDIR=$(mktemp -d -t rmc_build.XXXXXX)
