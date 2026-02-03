@@ -47,7 +47,8 @@ classdef tParallelizableBuildSummaryPlugin < matlab.unittest.TestCase
 
             testCase.Runner.run(plan, ["t1", "t2"]);
 
-            f = fullfile(testCase.TempFolder, "buildSummary.json");
+            name = "buildSummary" + getenv("GITHUB_RUN_ID") + ".json";
+            f = fullfile(testCase.TempFolder, name);
             testCase.assertTrue(isfile(f));
 
             s = readstruct(f);
@@ -64,7 +65,8 @@ classdef tParallelizableBuildSummaryPlugin < matlab.unittest.TestCase
 
             testCase.Runner.run(plan, ["t1", "t2"]);
 
-            f = fullfile(testCase.TempFolder, "buildSummary.json");
+            name = "buildSummary" + getenv("GITHUB_RUN_ID") + ".json";
+            f = fullfile(testCase.TempFolder, name);
             testCase.assertTrue(isfile(f));
 
             s = readstruct(f);
@@ -84,7 +86,9 @@ classdef tParallelizableBuildSummaryPlugin < matlab.unittest.TestCase
 
             testCase.Runner.run(plan, "g:t");
 
-            f = fullfile(testCase.TempFolder, "buildSummary.json");
+            name = "buildSummary" + getenv("GITHUB_RUN_ID") + ".json";
+            f = fullfile(testCase.TempFolder, name);
+
             testCase.assertTrue(isfile(f));
 
             s = readstruct(f);
