@@ -9,16 +9,10 @@ classdef ParallelizableBuildSummaryPlugin < matlab.buildtool.plugins.BuildRunner
     methods
         function plugin = ParallelizableBuildSummaryPlugin(options)
             arguments
-                options.TempFolder (1,:) string = string.empty()
+                options.TempFolder (1,:) string = getenv("RUNNER_TEMP")
             end
 
-            if ~isempty(options.TempFolder)
-                tempRoot = options.TempFolder;
-            else
-                tempRoot = getenv("RUNNER_TEMP");
-            end
-
-            plugin.TempFolder = fullfile(tempRoot, "taskDetails");
+            plugin.TempFolder = fullfile(options.TempFolder, "taskDetails");
         end
     end
 
