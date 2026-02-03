@@ -7,8 +7,17 @@ classdef ParallelizableBuildSummaryPlugin < matlab.buildtool.plugins.BuildRunner
     end
 
     methods
-        function plugin = ParallelizableBuildSummaryPlugin()
-            tempRoot = getenv("RUNNER_TEMP");
+        function plugin = ParallelizableBuildSummaryPlugin(options)
+            arguments
+                options.TempFolder (1,:) string = string.empty()
+            end
+
+            if ~isempty(options.TempFolder)
+                tempRoot = options.TempFolder;
+            else
+                tempRoot = getenv("RUNNER_TEMP");
+            end
+
             plugin.TempFolder = fullfile(tempRoot, "taskDetails");
         end
     end
@@ -31,7 +40,8 @@ classdef ParallelizableBuildSummaryPlugin < matlab.buildtool.plugins.BuildRunner
             end
 
             % Write to file
-            [fID, msg] = fopen(fullfile(getenv("RUNNER_TEMP"), "buildSummary" + getenv("GITHUB_RUN_ID") + ".json"), "w");
+            folder = fileparts(plugin.TempFolder);
+            [fID, msg] = fopen(fullfile(folder, "buildSummary" + getenv("GITHUB_RUN_ID") + ".json"), "w");
             if fID == -1
                 warning("buildframework:BuildSummaryPlugin:UnableToOpenFile","Unable to open a file required to create the MATLAB build summary table: %s", msg);
             else

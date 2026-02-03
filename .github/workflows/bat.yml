@@ -4,6 +4,20 @@ permissions:
   contents: read
 
 jobs:
+  plugin-tests:
+    runs-on: ${{ matrix.os }}
+    strategy:
+        fail-fast: false
+        matrix:
+            include:
+                - os: ubuntu-latest
+                - os: windows-latest
+                - os: macos-latest
+    steps:
+        - uses: actions/checkout@v5
+        - uses: matlab-actions/setup-matlab@v2
+        - uses: matlab-actions/run-tests@v2
+      
   bat:
     name: Build and Test
     runs-on: ubuntu-22.04
