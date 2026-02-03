@@ -37,7 +37,8 @@ classdef tParallelizableBuildSummaryPlugin < matlab.unittest.TestCase
 
             testCase.Runner.run(plan, ["t1", "t2"]);
 
-            testCase.verifyTrue(isfile(fullfile(testCase.TempFolder, "buildSummary.json")));
+            name = "buildSummary" + getenv("GITHUB_RUN_ID") + ".json";
+            testCase.verifyTrue(isfile(fullfile(testCase.TempFolder, name)));
         end
 
         function runningBuildCreatesSummaryArtifactWithExpectedTasks(testCase)
