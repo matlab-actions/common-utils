@@ -50,7 +50,7 @@ classdef ParallelizableBuildSummaryPlugin < matlab.buildtool.plugins.BuildRunner
             try
                 save(name, "taskDetail");
             catch e
-                warning("buildframework:BuildSummaryPlugin:UnableToSaveTrace", "Unable to save an artifact required to create the MATLAB build summary table");
+                warning("buildframework:BuildSummaryPlugin:UnableToSaveTrace", "Unable to save an artifact needed for the build summary.");
             end
         end
 
@@ -64,7 +64,7 @@ classdef ParallelizableBuildSummaryPlugin < matlab.buildtool.plugins.BuildRunner
             try
                 save(name, "taskDetail");
             catch e
-                warning("buildframework:BuildSummaryPlugin:UnableToSaveTrace", "Unable to save an artifact required to create the MATLAB build summary table");
+                warning("buildframework:BuildSummaryPlugin:UnableToSaveTrace", "Unable to save an artifact needed for the build summary.");
             end
         end
     end
