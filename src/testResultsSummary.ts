@@ -1,4 +1,4 @@
-// Copyright 2025 The MathWorks, Inc.
+// Copyright 2025-26 The MathWorks, Inc.
 
 import { readFileSync, unlinkSync, existsSync } from "fs";
 import * as path from "path";

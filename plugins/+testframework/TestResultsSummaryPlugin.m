@@ -1,5 +1,5 @@
 classdef TestResultsSummaryPlugin < matlab.unittest.plugins.TestRunnerPlugin
-    % Copyright 2025 The MathWorks, Inc.
+    % Copyright 2025-26 The MathWorks, Inc.
     
     methods (Access=protected)
         function reportFinalizedSuite(plugin, pluginData)
