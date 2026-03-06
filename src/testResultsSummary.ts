@@ -114,7 +114,7 @@ export function getTestResults(
             }
         } catch (e) {
             console.error(
-                "An error occurred while reading the test results summary file ${resultsPath}:",
+                `An error occurred while reading the test results summary file ${resultsPath}:`,
                 e,
             );
         } finally {

@@ -20,14 +20,17 @@ classdef TestResultsSummaryPlugin < matlab.unittest.plugins.TestRunnerPlugin
                 testResults = {};
             end
             testResults{end+1} = testDetails;
-            JsonTestResults = jsonencode(testResults, "PrettyPrint", true);
 
-            [fID, msg] = fopen(testArtifactFile, "w");
-            if fID == -1
-                warning("testframework:TestResultsSummaryPlugin:UnableToOpenFile","Could not open a file for GitHub tests result table due to: %s", msg);
-            else
-                closeFile = onCleanup(@()fclose(fID));
-                fprintf(fID, '%s', JsonTestResults);
+            try
+                JsonTestResults = jsonencode(testResults, "PrettyPrint", true);
+
+                [fID, msg] = fopen(testArtifactFile, "w");
+                if fID == -1
+                    warning("testframework:TestResultsSummaryPlugin:UnableToOpenFile","Could not open a file for GitHub tests result table due to: %s", msg);
+                else
+                    closeFile = onCleanup(@()fclose(fID));
+                    fprintf(fID, '%s', JsonTestResults);
+                end
             end
 
             % Invoke the superclass method
