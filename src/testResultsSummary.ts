@@ -1,4 +1,4 @@
-// Copyright 2025 The MathWorks, Inc.
+// Copyright 2025-26 The MathWorks, Inc.
 
 import { readFileSync, unlinkSync, existsSync } from "fs";
 import * as path from "path";
@@ -114,7 +114,7 @@ export function getTestResults(
             }
         } catch (e) {
             console.error(
-                "An error occurred while reading the test results summary file ${resultsPath}:",
+                `An error occurred while reading the test results summary file ${resultsPath}:`,
                 e,
             );
         } finally {
