@@ -3,6 +3,7 @@
 import { readFileSync, unlinkSync, existsSync } from "fs";
 import * as path from "path";
 import * as core from "@actions/core";
+import { getCoverageData, generateCoverageTableHTML } from "./codeCoverageSummary";
 
 export enum MatlabTestStatus {
     PASSED = "PASSED",
@@ -143,9 +144,25 @@ export function addSummary(
         const header = getTestHeader(testResultsData.Stats);
         const detailedResults = getDetailedResults(testResultsData.TestResults);
 
+        // core.summary
+        //     .addHeading("MATLAB Test Results (" + actionName + ") " + helpLink)
+        //     .addRaw(header, true)
+        //     .addHeading("All tests", 3)
+        //     .addRaw(detailedResults, true);
         core.summary
             .addHeading("MATLAB Test Results (" + actionName + ") " + helpLink)
-            .addRaw(header, true)
+            .addRaw(header, true);
+
+        // Add coverage table if available
+        const coverageData = getCoverageData();
+        if (coverageData) {
+            core.summary
+                .addHeading("MATLAB Code Coverage", 3)
+                .addRaw(generateCoverageTableHTML(coverageData), true);
+        }
+
+        // Add detailed test results
+        core.summary
             .addHeading("All tests", 3)
             .addRaw(detailedResults, true);
     } catch (e) {
