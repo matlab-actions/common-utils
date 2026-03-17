@@ -1,6 +1,6 @@
 // Copyright 2020-2025 The MathWorks, Inc.
 
-import * as script from "./script";
+import * as script from "./script.js";
 import * as path from "path";
 
 describe("call generation", () => {

@@ -1,6 +1,6 @@
 // Copyright 2024-25 The MathWorks, Inc.
 
-import * as buildSummary from './buildSummary';
+import * as buildSummary from './buildSummary.js';
 import * as core from '@actions/core';
 
 jest.mock('@actions/core', () => ({
