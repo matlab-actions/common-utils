@@ -1,8 +1,8 @@
-// Copyright 2020-2025 The MathWorks, Inc.
+// Copyright 2020-2026 The MathWorks, Inc.
 
 import { promises as fs } from "fs";
 import * as path from "path";
-import * as matlab from "./matlab";
+import * as matlab from "./matlab.js";
 
 afterEach(() => {
     jest.resetAllMocks();

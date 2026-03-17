@@ -1,6 +1,6 @@
-// Copyright 2025 The MathWorks, Inc.
+// Copyright 2025-2026 The MathWorks, Inc.
 
-import * as testResultsSummary from "./testResultsSummary";
+import * as testResultsSummary from "./testResultsSummary.js";
 import * as path from "path";
 import * as fs from "fs";
 import * as core from "@actions/core";
