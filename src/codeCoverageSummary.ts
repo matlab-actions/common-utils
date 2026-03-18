@@ -11,11 +11,11 @@ interface CoverageMetric {
 
 interface CoverageData {
     MetricLevel?: string;
-    StatementCoverage?: CoverageMetric;  // Made optional with ?
-    FunctionCoverage?: CoverageMetric;   // Made optional with ?
-    DecisionCoverage?: CoverageMetric;   // Made optional with ?
-    ConditionCoverage?: CoverageMetric;  // Made optional with ?
-    MCDCCoverage?: CoverageMetric;       // Made optional with ?
+    StatementCoverage?: CoverageMetric;  
+    FunctionCoverage?: CoverageMetric;   
+    DecisionCoverage?: CoverageMetric;   
+    ConditionCoverage?: CoverageMetric;  
+    MCDCCoverage?: CoverageMetric;       
 }
 
 export function getCoverageData(): CoverageData | null {
@@ -23,17 +23,13 @@ export function getCoverageData(): CoverageData | null {
     const runId = process.env.GITHUB_RUN_ID || "";
     const coveragePath = path.join(runnerTemp, `matlabCoverageResults${runId}.json`);
     
-    //core.info(`Looking for coverage at: ${coveragePath}`);
-    
     if (!existsSync(coveragePath)) {
-        //core.info("No coverage data found");
         return null;
     }
 
     try {
         const coverageData: CoverageData[] = JSON.parse(readFileSync(coveragePath, "utf8"));
         if (!coverageData || coverageData.length === 0) {
-            //core.info("Coverage data is empty");
             return null;
         }
         return coverageData[coverageData.length - 1];
@@ -52,8 +48,6 @@ function formatPercentage(percentage: number): string {
 
 export function generateCoverageTableHTML(coverage: CoverageData): string {
     try {
-        //core.info(`Generating coverage table for metric level: ${coverage.MetricLevel}`);
-        
         // Define all possible columns
         const allColumns = [
             { name: 'Statement', data: coverage.StatementCoverage },
@@ -70,8 +64,6 @@ export function generateCoverageTableHTML(coverage: CoverageData): string {
             core.warning('No visible columns found');
             return '<p>No coverage data available</p>';
         }
-
-        //core.info(`Visible columns: ${visibleColumns.map(c => c.name).join(', ')}`);
 
         // Build header row
         const headers = visibleColumns.map(col => `<th>${col.name}</th>`).join('');
@@ -90,7 +82,6 @@ export function generateCoverageTableHTML(coverage: CoverageData): string {
         const coveredTotalRow = `<tr align="center"><td><b>Covered/Total</b></td>${coveredTotals}</tr>`;
 
         const tableHTML = `<table>${headerRow}${percentageRow}${coveredTotalRow}</table>`;
-        //core.info(`Generated table HTML: ${tableHTML}`);
         
         return tableHTML;
     } catch (error) {

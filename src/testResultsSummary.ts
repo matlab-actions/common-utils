@@ -144,11 +144,6 @@ export function addSummary(
         const header = getTestHeader(testResultsData.Stats);
         const detailedResults = getDetailedResults(testResultsData.TestResults);
 
-        // core.summary
-        //     .addHeading("MATLAB Test Results (" + actionName + ") " + helpLink)
-        //     .addRaw(header, true)
-        //     .addHeading("All tests", 3)
-        //     .addRaw(detailedResults, true);
         core.summary
             .addHeading("MATLAB Test Results (" + actionName + ") " + helpLink)
             .addRaw(header, true);
