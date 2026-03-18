@@ -162,9 +162,9 @@ export function addSummary(
         }
 
         // Add detailed test results
-        core.summary
-            .addHeading("All tests", 3)
-            .addRaw(detailedResults, true);
+        // core.summary
+        //     .addHeading("All tests", 3)
+        //     .addRaw(detailedResults, true);
     } catch (e) {
         console.error("An error occurred while adding the test results to the summary:", e);
     }
