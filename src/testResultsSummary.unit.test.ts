@@ -137,105 +137,35 @@ describe("Artifact Processing Tests", () => {
         );
     });
 
-    // it("should write test results data to the GitHub job summary", () => {
-    //     if (testResultsData) {
-    //         const actionName = process.env.GITHUB_ACTION || "";
-    //         testResultsSummary.addSummary(testResultsData, actionName);
+    it("should write test results data to the GitHub job summary", () => {
+        if (testResultsData) {
+            const actionName = process.env.GITHUB_ACTION || "";
+            testResultsSummary.addSummary(testResultsData, actionName);
 
-    //         expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining("MATLAB Test Results (" + actionName + ")"),
-    //         );
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining(
-    //                 '<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"',
-    //             ),
-    //         );
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining('target="_blank"'),
-    //         );
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining("ℹ️</a>"),
-    //         );
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(2, "All tests", 3);
+            expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining("MATLAB Test Results (" + actionName + ")"),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining(
+                    '<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"',
+                ),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining('target="_blank"'),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining("ℹ️</a>"),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(2, "All tests", 3);
 
-    //         expect(core.summary.addRaw).toHaveBeenCalledTimes(2);
-    //     }
-    // });
-
-    // it("should write test results data to the GitHub job summary", () => {
-    //     if (testResultsData) {
-    //         const actionName = process.env.GITHUB_ACTION || "";
-            
-    //         // Mock getCoverageData to return null for this test (or mock it to return data if you want to test that path)
-    //         const getCoverageDataSpy = jest.spyOn(require('./codeCoverageSummary'), 'getCoverageData').mockReturnValue(null);
-            
-    //         testResultsSummary.addSummary(testResultsData, actionName);
-            
-    //         // Should be called 1 time since "All tests" heading is commented out and no coverage data
-    //         expect(core.summary.addHeading).toHaveBeenCalledTimes(1);
-            
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining("MATLAB Test Results (" + actionName + ")"),
-    //         );
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining(
-    //                 '<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"',
-    //             ),
-    //         );
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining('target="_blank"'),
-    //         );
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining("ℹ️</a>"),
-    //         );
-            
-    //         // Should be called 1 time (just the header, since detailed results are commented out)
-    //         expect(core.summary.addRaw).toHaveBeenCalledTimes(1);
-            
-    //         getCoverageDataSpy.mockRestore();
-    //     }
-    // });
-
-    // it("should write test results with coverage data to the GitHub job summary", () => {
-    //     if (testResultsData) {
-    //         const actionName = process.env.GITHUB_ACTION || "";
-    //         const mockCoverageData = { /* your mock coverage data structure */ };
-            
-    //         // Mock getCoverageData to return coverage data
-    //         const getCoverageDataSpy = jest.spyOn(require('./codeCoverageSummary'), 'getCoverageData').mockReturnValue(mockCoverageData);
-    //         const generateCoverageTableHTMLSpy = jest.spyOn(require('./codeCoverageSummary'), 'generateCoverageTableHTML').mockReturnValue('<table>Coverage</table>');
-            
-    //         testResultsSummary.addSummary(testResultsData, actionName);
-            
-    //         // Should be called 2 times (main heading + coverage heading)
-    //         expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
-            
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining("MATLAB Test Results (" + actionName + ")"),
-    //         );
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             2,
-    //             "MATLAB Code Coverage",
-    //             3
-    //         );
-            
-    //         // Should be called 2 times (header + coverage table)
-    //         expect(core.summary.addRaw).toHaveBeenCalledTimes(2);
-            
-    //         getCoverageDataSpy.mockRestore();
-    //         generateCoverageTableHTMLSpy.mockRestore();
-    //     }
-    // });
+            expect(core.summary.addRaw).toHaveBeenCalledTimes(2);
+        }
+    });
 });
 
 describe("HTML Structure Tests", () => {
