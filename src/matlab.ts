@@ -1,10 +1,10 @@
-// Copyright 2020-2025 The MathWorks, Inc.
+// Copyright 2020-2026 The MathWorks, Inc.
 
 import { promises as fs } from "fs";
 import * as os from "os";
 import * as path from "path";
 import { v4 as uuid } from "uuid";
-import * as script from "./script";
+import * as script from "./script.js";
 
 /**
  * Helper interface to represent a MATLAB script.
