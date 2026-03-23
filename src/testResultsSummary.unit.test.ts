@@ -137,35 +137,35 @@ describe("Artifact Processing Tests", () => {
         );
     });
 
-    // it("should write test results data to the GitHub job summary", () => {
-    //     if (testResultsData) {
-    //         const actionName = process.env.GITHUB_ACTION || "";
-    //         testResultsSummary.addSummary(testResultsData, actionName);
+    it("should write test results data to the GitHub job summary", () => {
+        if (testResultsData) {
+            const actionName = process.env.GITHUB_ACTION || "";
+            testResultsSummary.addSummary(testResultsData, actionName);
 
-    //         expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining("MATLAB Test Results (" + actionName + ")"),
-    //         );
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining(
-    //                 '<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"',
-    //             ),
-    //         );
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining('target="_blank"'),
-    //         );
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-    //             1,
-    //             expect.stringContaining("ℹ️</a>"),
-    //         );
-    //         expect(core.summary.addHeading).toHaveBeenNthCalledWith(2, "All tests", 3);
+            expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining("MATLAB Test Results (" + actionName + ")"),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining(
+                    '<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"',
+                ),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining('target="_blank"'),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining("ℹ️</a>"),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(2, "All tests", 3);
 
-    //         expect(core.summary.addRaw).toHaveBeenCalledTimes(2);
-    //     }
-    // });
+            expect(core.summary.addRaw).toHaveBeenCalledTimes(2);
+        }
+    });
 });
 
 describe("HTML Structure Tests", () => {
