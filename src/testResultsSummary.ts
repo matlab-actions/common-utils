@@ -142,7 +142,7 @@ export function addSummary(
             `<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"` +
             ` target="_blank" title="View documentation">ℹ️</a>`;
         const header = getTestHeader(testResultsData.Stats);
-        //const detailedResults = getDetailedResults(testResultsData.TestResults);
+        const detailedResults = getDetailedResults(testResultsData.TestResults);
 
         core.summary
             .addHeading("MATLAB Test Results (" + actionName + ") " + helpLink)
