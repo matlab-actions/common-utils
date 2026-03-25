@@ -1,31 +1,47 @@
 // Copyright 2025-2026 The MathWorks, Inc.
 
-import * as testResultsSummary from "./testResultsSummary.js";
+import {jest, describe, it, expect, beforeAll} from "@jest/globals";
 import * as path from "path";
-import * as fs from "fs";
-import * as core from "@actions/core";
+import * as os from "node:os";
+import * as nodeFs from "node:fs";
+import { fileURLToPath } from "url";
 import { JSDOM } from "jsdom";
+import type * as TestResultsSummaryTypes from "./testResultsSummary.js";
 
-jest.mock("@actions/core", () => ({
+const dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Mock @actions/core
+jest.unstable_mockModule("@actions/core", () => ({
     summary: {
         addHeading: jest.fn().mockReturnThis(),
         addRaw: jest.fn().mockReturnThis(),
     },
 }));
 
-jest.mock("fs", () => ({
-    ...jest.requireActual("fs"),
-    unlinkSync: jest.fn(),
+// Mock fs, passing through real implementations except unlinkSync
+const mockUnlinkSync = jest.fn();
+jest.unstable_mockModule("fs", () => ({
+    readFileSync: nodeFs.readFileSync,
+    existsSync: nodeFs.existsSync,
+    writeFileSync: nodeFs.writeFileSync,
+    copyFileSync: nodeFs.copyFileSync,
+    unlinkSync: mockUnlinkSync,
 }));
+
+// Dynamic imports after mocking
+const core = await import("@actions/core");
+const fs = await import("fs");
+const testResultsSummary = await import("./testResultsSummary.js");
+const {MatlabTestStatus} = testResultsSummary;
 
 describe("Artifact Processing Tests", () => {
     // Shared test data
-    let testResultsData: testResultsSummary.TestResultsData | null;
-    let testResults: testResultsSummary.MatlabTestFile[][];
-    let stats: testResultsSummary.TestStatistics;
+    let testResultsData: TestResultsSummaryTypes.TestResultsData | null;
+    let testResults: TestResultsSummaryTypes.MatlabTestFile[][];
+    let stats: TestResultsSummaryTypes.TestStatistics;
 
     beforeAll(() => {
-        const runnerTemp = path.join(__dirname, "..");
+        const runnerTemp = path.join(dirname, "..");
         const runId = "123";
         const actionName = "run-tests";
         const osInfo = getOSInfo();
@@ -41,18 +57,18 @@ describe("Artifact Processing Tests", () => {
     });
 
     function getOSInfo() {
-        const os = require("os").platform().toLowerCase();
-        if (os.includes("win") && !os.includes("darwin"))
+        const platform = os.platform().toLowerCase();
+        if (platform.includes("win") && !platform.includes("darwin"))
             return { osName: "windows", workspaceParent: "C:\\" };
-        if (os.includes("linux") || os.includes("unix") || os.includes("aix"))
+        if (platform.includes("linux") || platform.includes("unix") || platform.includes("aix"))
             return { osName: "linux", workspaceParent: "/home/user/" };
-        if (os.includes("darwin")) return { osName: "mac", workspaceParent: "/Users/username/" };
-        throw new Error(`Unsupported OS: ${os}`);
+        if (platform.includes("darwin")) return { osName: "mac", workspaceParent: "/Users/username/" };
+        throw new Error(`Unsupported OS: ${platform}`);
     }
 
     function copyTestDataFile(osName: string, runnerTemp: string, runId: string, actionName: string) {
         const sourceFilePath = path.join(
-            __dirname,
+            dirname,
             "test-data",
             "testResultsArtifacts",
             "t1",
@@ -96,8 +112,8 @@ describe("Artifact Processing Tests", () => {
         expect(testResults[1][0].Name).toBe("TestExamples2");
         expect(testResults[0][0].Duration).toBeCloseTo(1.73);
         expect(testResults[1][0].Duration).toBeCloseTo(0.1);
-        expect(testResults[0][0].Status).toBe(testResultsSummary.MatlabTestStatus.FAILED);
-        expect(testResults[1][0].Status).toBe(testResultsSummary.MatlabTestStatus.INCOMPLETE);
+        expect(testResults[0][0].Status).toBe(MatlabTestStatus.FAILED);
+        expect(testResults[1][0].Status).toBe(MatlabTestStatus.INCOMPLETE);
     });
 
     it("should return correct test cases data for valid JSON", () => {
@@ -108,16 +124,16 @@ describe("Artifact Processing Tests", () => {
         expect(testResults[1][0].TestCases[0].Name).toBe("testNonLeapYear");
 
         expect(testResults[0][0].TestCases[0].Status).toBe(
-            testResultsSummary.MatlabTestStatus.PASSED,
+            MatlabTestStatus.PASSED,
         );
         expect(testResults[0][0].TestCases[4].Status).toBe(
-            testResultsSummary.MatlabTestStatus.FAILED,
+            MatlabTestStatus.FAILED,
         );
         expect(testResults[0][0].TestCases[8].Status).toBe(
-            testResultsSummary.MatlabTestStatus.NOT_RUN,
+            MatlabTestStatus.NOT_RUN,
         );
         expect(testResults[1][0].TestCases[0].Status).toBe(
-            testResultsSummary.MatlabTestStatus.INCOMPLETE,
+            MatlabTestStatus.INCOMPLETE,
         );
 
         expect(testResults[0][0].TestCases[0].Duration).toBeCloseTo(0.1);
@@ -170,16 +186,16 @@ describe("Artifact Processing Tests", () => {
 
 describe("HTML Structure Tests", () => {
     it.each([
-        [testResultsSummary.MatlabTestStatus.PASSED, "✅"],
-        [testResultsSummary.MatlabTestStatus.FAILED, "❌"],
-        [testResultsSummary.MatlabTestStatus.INCOMPLETE, "⚠️"],
-        [testResultsSummary.MatlabTestStatus.NOT_RUN, "🚫"],
+        [MatlabTestStatus.PASSED, "✅"],
+        [MatlabTestStatus.FAILED, "❌"],
+        [MatlabTestStatus.INCOMPLETE, "⚠️"],
+        [MatlabTestStatus.NOT_RUN, "🚫"],
     ])("should return %s emoji for %s Status", (Status, expectedEmoji) => {
         expect(testResultsSummary.getStatusEmoji(Status)).toBe(expectedEmoji);
     });
 
     it("should generate valid HTML table structure for header", () => {
-        const mockStats: testResultsSummary.TestStatistics = {
+        const mockStats: TestResultsSummaryTypes.TestStatistics = {
             Total: 10,
             Passed: 4,
             Failed: 3,
@@ -223,18 +239,18 @@ describe("HTML Structure Tests", () => {
     });
 
     it("should generate valid HTML for detailed results with proper details tags for both passed and failed tests", () => {
-        const mockTestResults: testResultsSummary.MatlabTestFile[][] = [
+        const mockTestResults: TestResultsSummaryTypes.MatlabTestFile[][] = [
             [
                 {
                     Name: "TestExamples1",
                     Path: "tests/TestExamples1",
                     Duration: 1.5,
-                    Status: testResultsSummary.MatlabTestStatus.FAILED,
+                    Status: MatlabTestStatus.FAILED,
                     TestCases: [
                         {
                             Name: "testFailedCase",
                             Duration: 0.5,
-                            Status: testResultsSummary.MatlabTestStatus.FAILED,
+                            Status: MatlabTestStatus.FAILED,
                             Diagnostics: [
                                 {
                                     Event: "TestFailure",
@@ -248,12 +264,12 @@ describe("HTML Structure Tests", () => {
                     Name: "TestExamples2",
                     Path: "tests/TestExamples2",
                     Duration: 0.3,
-                    Status: testResultsSummary.MatlabTestStatus.PASSED,
+                    Status: MatlabTestStatus.PASSED,
                     TestCases: [
                         {
                             Name: "testPassedCase",
                             Duration: 0.3,
-                            Status: testResultsSummary.MatlabTestStatus.PASSED,
+                            Status: MatlabTestStatus.PASSED,
                             Diagnostics: [],
                         },
                     ],
@@ -328,7 +344,7 @@ describe("Error Handling Tests", () => {
             throw new Error("Mock error in addHeading");
         });
 
-        const mockStats: testResultsSummary.TestStatistics = {
+        const mockStats: TestResultsSummaryTypes.TestStatistics = {
             Total: 1,
             Passed: 1,
             Failed: 0,
@@ -336,8 +352,8 @@ describe("Error Handling Tests", () => {
             NotRun: 0,
             Duration: 0.5,
         };
-        const mockTestResults: testResultsSummary.MatlabTestFile[][] = [];
-        const mockTestResultsData: testResultsSummary.TestResultsData = {
+        const mockTestResults: TestResultsSummaryTypes.MatlabTestFile[][] = [];
+        const mockTestResultsData: TestResultsSummaryTypes.TestResultsData = {
             TestResults: mockTestResults,
             Stats: mockStats,
         };
@@ -360,7 +376,7 @@ describe("Error Handling Tests", () => {
         const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
         // Set up environment variables
-        process.env.RUNNER_TEMP = path.join(__dirname, "..");
+        process.env.RUNNER_TEMP = path.join(dirname, "..");
         process.env.GITHUB_RUN_ID = "123";
         process.env.GITHUB_ACTION = "run-tests";
 
@@ -381,8 +397,8 @@ describe("Error Handling Tests", () => {
             );
         } finally {
             // Clean up
-            if (fs.existsSync(invalidJsonPath)) {
-                fs.unlinkSync(invalidJsonPath);
+            if (nodeFs.existsSync(invalidJsonPath)) {
+                nodeFs.unlinkSync(invalidJsonPath);
             }
             consoleSpy.mockRestore();
         }
@@ -391,16 +407,13 @@ describe("Error Handling Tests", () => {
     it("should handle file deletion errors gracefully", () => {
         const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-        // Get the mocked function
-        const mockedUnlinkSync = jest.mocked(fs.unlinkSync);
-
         // Set up the mock to throw an error for this test
-        mockedUnlinkSync.mockImplementationOnce(() => {
+        mockUnlinkSync.mockImplementationOnce(() => {
             throw new Error("Permission denied - cannot delete file");
         });
 
         // Set up environment variables
-        process.env.RUNNER_TEMP = path.join(__dirname, "..");
+        process.env.RUNNER_TEMP = path.join(dirname, "..");
         process.env.GITHUB_RUN_ID = "123";
         process.env.GITHUB_ACTION = "run-tests";
 
@@ -426,16 +439,15 @@ describe("Error Handling Tests", () => {
             );
 
             // Verify unlinkSync was called
-            expect(mockedUnlinkSync).toHaveBeenCalledWith(validJsonPath);
+            expect(mockUnlinkSync).toHaveBeenCalledWith(validJsonPath);
         } finally {
             // Clean up
-            mockedUnlinkSync.mockRestore();
+            mockUnlinkSync.mockReset();
             consoleSpy.mockRestore();
 
-            // Clean up the test file (use the real fs function)
-            const realFs = jest.requireActual("fs");
+            // Clean up the test file using real fs
             try {
-                realFs.unlinkSync(validJsonPath);
+                nodeFs.unlinkSync(validJsonPath);
             } catch (e) {
                 // Ignore cleanup errors
             }

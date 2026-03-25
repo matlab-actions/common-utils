@@ -3,6 +3,7 @@
 import { promises as fs } from "fs";
 import * as os from "os";
 import * as path from "path";
+import { fileURLToPath } from "url";
 import { v4 as uuid } from "uuid";
 import * as script from "./script.js";
 
@@ -103,7 +104,8 @@ export function getRunMATLABCommandScriptPath(platform: string, architecture: st
         default:
             throw new Error(`This action is not supported on ${platform} runners using the ${architecture} architecture.`);
     }
-    const rmcPath = path.join(__dirname, "bin", platformDir, `run-matlab-command${ext}`);
+    const dirname = path.dirname(fileURLToPath(import.meta.url));
+    const rmcPath = path.join(dirname, "bin", platformDir, `run-matlab-command${ext}`);
     return rmcPath;
 
 }
