@@ -1,6 +1,6 @@
 // Copyright 2024-26 The MathWorks, Inc.
 
-import {jest, describe, it, expect, beforeEach} from "@jest/globals";
+import { jest, describe, it, expect, beforeEach } from "@jest/globals";
 
 jest.unstable_mockModule('@actions/core', () => ({
     summary: {

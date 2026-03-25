@@ -1,6 +1,6 @@
 // Copyright 2020-2026 The MathWorks, Inc.
 
-import {jest, describe, it, expect, afterEach} from "@jest/globals";
+import { jest, describe, it, expect, afterEach } from "@jest/globals";
 import { promises as fs } from "fs";
 import * as path from "path";
 import * as matlab from "./matlab.js";

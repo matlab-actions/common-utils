@@ -1,6 +1,6 @@
 // Copyright 2020-2026 The MathWorks, Inc.
 
-import {describe, it, expect} from "@jest/globals";
+import { describe, it, expect } from "@jest/globals";
 import * as script from "./script.js";
 import * as path from "path";
 
