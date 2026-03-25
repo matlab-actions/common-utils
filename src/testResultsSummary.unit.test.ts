@@ -4,11 +4,8 @@ import {jest, describe, it, expect, beforeAll} from "@jest/globals";
 import * as path from "path";
 import * as os from "node:os";
 import * as nodeFs from "node:fs";
-import { fileURLToPath } from "url";
 import { JSDOM } from "jsdom";
 import type * as TestResultsSummaryTypes from "./testResultsSummary.js";
-
-const dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Mock @actions/core
 jest.unstable_mockModule("@actions/core", () => ({
@@ -41,7 +38,7 @@ describe("Artifact Processing Tests", () => {
     let stats: TestResultsSummaryTypes.TestStatistics;
 
     beforeAll(() => {
-        const runnerTemp = path.join(dirname, "..");
+        const runnerTemp = path.join(import.meta.dirname, "..");
         const runId = "123";
         const actionName = "run-tests";
         const osInfo = getOSInfo();
@@ -68,7 +65,7 @@ describe("Artifact Processing Tests", () => {
 
     function copyTestDataFile(osName: string, runnerTemp: string, runId: string, actionName: string) {
         const sourceFilePath = path.join(
-            dirname,
+            import.meta.dirname,
             "test-data",
             "testResultsArtifacts",
             "t1",
@@ -376,7 +373,7 @@ describe("Error Handling Tests", () => {
         const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
         // Set up environment variables
-        process.env.RUNNER_TEMP = path.join(dirname, "..");
+        process.env.RUNNER_TEMP = path.join(import.meta.dirname, "..");
         process.env.GITHUB_RUN_ID = "123";
         process.env.GITHUB_ACTION = "run-tests";
 
@@ -413,7 +410,7 @@ describe("Error Handling Tests", () => {
         });
 
         // Set up environment variables
-        process.env.RUNNER_TEMP = path.join(dirname, "..");
+        process.env.RUNNER_TEMP = path.join(import.meta.dirname, "..");
         process.env.GITHUB_RUN_ID = "123";
         process.env.GITHUB_ACTION = "run-tests";
 

@@ -3,14 +3,12 @@
 import {describe, it, expect} from "@jest/globals";
 import * as script from "./script.js";
 import * as path from "path";
-import { fileURLToPath } from "url";
 
 describe("call generation", () => {
     it("ideally works", () => {
         // I know what your thinking
         const testCommand = "disp('hello world')";
-        const dirname = path.dirname(fileURLToPath(import.meta.url));
-        const pluginsPath = path.join(dirname, "plugins").replaceAll("'","''");
+        const pluginsPath = path.join(import.meta.dirname, "plugins").replaceAll("'","''");
         const expectedString = `cd(getenv('MW_ORIG_WORKING_FOLDER')); addpath('` + pluginsPath + `'); ${testCommand}`;
 
         expect(script.prepare(testCommand)).toMatch(expectedString);

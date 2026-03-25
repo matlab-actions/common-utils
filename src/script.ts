@@ -1,7 +1,6 @@
 // Copyright 2020-2025 The MathWorks, Inc.
 
 import * as path from "path";
-import { fileURLToPath } from "url";
 
 /**
  * Generate MATLAB command for changing directories, adding plugins to path and calling a command in it.
@@ -11,8 +10,7 @@ import { fileURLToPath } from "url";
  * @returns MATLAB command.
  */
 export function prepare(command: string): string {
-    const dirname = path.dirname(fileURLToPath(import.meta.url));
-    const pluginsPath = path.join(dirname, "plugins").replaceAll("'","''");
+    const pluginsPath = path.join(import.meta.dirname, "plugins").replaceAll("'","''");
     return `cd(getenv('MW_ORIG_WORKING_FOLDER')); ` +
         `addpath('` + pluginsPath + `'); `
         + command;
