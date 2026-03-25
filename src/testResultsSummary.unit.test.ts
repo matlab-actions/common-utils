@@ -2,10 +2,10 @@
 
 import {jest, describe, it, expect, beforeAll} from "@jest/globals";
 import * as path from "path";
-import * as os from "node:os";
-import * as nodeFs from "node:fs";
+import * as os from "os";
+import * as nodeFs from "fs";
 import { JSDOM } from "jsdom";
-import type * as TestResultsSummaryTypes from "./testResultsSummary.js";
+import type { TestResultsData, MatlabTestFile, TestStatistics } from "./testResultsSummary.js";
 
 // Mock @actions/core
 jest.unstable_mockModule("@actions/core", () => ({
@@ -33,9 +33,9 @@ const {MatlabTestStatus} = testResultsSummary;
 
 describe("Artifact Processing Tests", () => {
     // Shared test data
-    let testResultsData: TestResultsSummaryTypes.TestResultsData | null;
-    let testResults: TestResultsSummaryTypes.MatlabTestFile[][];
-    let stats: TestResultsSummaryTypes.TestStatistics;
+    let testResultsData: TestResultsData | null;
+    let testResults: MatlabTestFile[][];
+    let stats: TestStatistics;
 
     beforeAll(() => {
         const runnerTemp = path.join(import.meta.dirname, "..");
@@ -192,7 +192,7 @@ describe("HTML Structure Tests", () => {
     });
 
     it("should generate valid HTML table structure for header", () => {
-        const mockStats: TestResultsSummaryTypes.TestStatistics = {
+        const mockStats: TestStatistics = {
             Total: 10,
             Passed: 4,
             Failed: 3,
@@ -236,7 +236,7 @@ describe("HTML Structure Tests", () => {
     });
 
     it("should generate valid HTML for detailed results with proper details tags for both passed and failed tests", () => {
-        const mockTestResults: TestResultsSummaryTypes.MatlabTestFile[][] = [
+        const mockTestResults: MatlabTestFile[][] = [
             [
                 {
                     Name: "TestExamples1",
@@ -341,7 +341,7 @@ describe("Error Handling Tests", () => {
             throw new Error("Mock error in addHeading");
         });
 
-        const mockStats: TestResultsSummaryTypes.TestStatistics = {
+        const mockStats: TestStatistics = {
             Total: 1,
             Passed: 1,
             Failed: 0,
@@ -349,8 +349,8 @@ describe("Error Handling Tests", () => {
             NotRun: 0,
             Duration: 0.5,
         };
-        const mockTestResults: TestResultsSummaryTypes.MatlabTestFile[][] = [];
-        const mockTestResultsData: TestResultsSummaryTypes.TestResultsData = {
+        const mockTestResults: MatlabTestFile[][] = [];
+        const mockTestResultsData: TestResultsData = {
             TestResults: mockTestResults,
             Stats: mockStats,
         };
