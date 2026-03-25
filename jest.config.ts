@@ -1,4 +1,5 @@
 export default {
+    clearMocks: true,
     testEnvironment: "node",
     collectCoverage: true,
     testMatch: ["**/*.test.ts"],
@@ -6,16 +7,16 @@ export default {
         "^.+\\.[jt]s$": [
             "ts-jest",
             {
+                useESM: true,
                 diagnostics: {
                     ignoreCodes: [151002],
                 },
             },
         ],
     },
+    extensionsToTreatAsEsm: ['.ts'],
     transformIgnorePatterns: ["node_modules/(?!(@actions)/)"],
     moduleNameMapper: {
         "^(\\.{1,2}/.*)\\.js$": "$1",
-        "^@actions/core$": "<rootDir>/node_modules/@actions/core/lib/core.js",
-        "^@actions/exec$": "<rootDir>/node_modules/@actions/exec/lib/exec.js",
     },
 };

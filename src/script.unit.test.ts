@@ -1,5 +1,6 @@
 // Copyright 2020-2026 The MathWorks, Inc.
 
+import { describe, it, expect } from "@jest/globals";
 import * as script from "./script.js";
 import * as path from "path";
 
@@ -7,7 +8,7 @@ describe("call generation", () => {
     it("ideally works", () => {
         // I know what your thinking
         const testCommand = "disp('hello world')";
-        const pluginsPath = path.join(__dirname, "plugins").replaceAll("'","''");
+        const pluginsPath = path.join(import.meta.dirname, "plugins").replaceAll("'","''");
         const expectedString = `cd(getenv('MW_ORIG_WORKING_FOLDER')); addpath('` + pluginsPath + `'); ${testCommand}`;
 
         expect(script.prepare(testCommand)).toMatch(expectedString);

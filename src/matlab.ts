@@ -103,7 +103,7 @@ export function getRunMATLABCommandScriptPath(platform: string, architecture: st
         default:
             throw new Error(`This action is not supported on ${platform} runners using the ${architecture} architecture.`);
     }
-    const rmcPath = path.join(__dirname, "bin", platformDir, `run-matlab-command${ext}`);
+    const rmcPath = path.join(import.meta.dirname, "bin", platformDir, `run-matlab-command${ext}`);
     return rmcPath;
 
 }

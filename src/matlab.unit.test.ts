@@ -1,8 +1,10 @@
 // Copyright 2020-2026 The MathWorks, Inc.
 
+import { jest, describe, it, expect, afterEach } from "@jest/globals";
 import { promises as fs } from "fs";
 import * as path from "path";
 import * as matlab from "./matlab.js";
+import type { ExecFn } from "./matlab.js";
 
 afterEach(() => {
     jest.resetAllMocks();
@@ -62,7 +64,7 @@ describe("run command", () => {
 
     it("ideally works", async () => {
         const chmod = jest.spyOn(fs, "chmod");
-        const execFn = jest.fn();
+        const execFn = jest.fn<ExecFn>();
 
         chmod.mockResolvedValue(undefined);
         execFn.mockResolvedValue(0);
@@ -73,21 +75,21 @@ describe("run command", () => {
 
     it("ideally works with arguments", async () => {
         const chmod = jest.spyOn(fs, "chmod");
-        const execFn = jest.fn();
+        const execFn = jest.fn<ExecFn>();
 
         chmod.mockResolvedValue(undefined);
         execFn.mockResolvedValue(0);
 
         const actual = matlab.runCommand(helperScript, platform, architecture, execFn, ["-nojvm", "-logfile", "file"]);
         await expect(actual).resolves.toBeUndefined();
-        expect(execFn.mock.calls[0][1][1]).toBe("-nojvm");
-        expect(execFn.mock.calls[0][1][2]).toBe("-logfile");
-        expect(execFn.mock.calls[0][1][3]).toBe("file");
+        expect(execFn.mock.calls[0][1]![1]).toBe("-nojvm");
+        expect(execFn.mock.calls[0][1]![2]).toBe("-logfile");
+        expect(execFn.mock.calls[0][1]![3]).toBe("file");
     });
 
     it("fails when chmod fails", async () => {
         const chmod = jest.spyOn(fs, "chmod");
-        const execFn = jest.fn();
+        const execFn = jest.fn<ExecFn>();
 
         chmod.mockRejectedValue(null);
 
@@ -99,7 +101,7 @@ describe("run command", () => {
 
     it("fails when the execFn fails", async () => {
         const chmod = jest.spyOn(fs, "chmod");
-        const execFn = jest.fn();
+        const execFn = jest.fn<ExecFn>();
 
         chmod.mockResolvedValue(undefined);
         execFn.mockRejectedValue(null);
@@ -112,7 +114,7 @@ describe("run command", () => {
 
     it("fails when the execFn has a non-zero exit code", async () => {
         const chmod = jest.spyOn(fs, "chmod");
-        const execFn = jest.fn();
+        const execFn = jest.fn<ExecFn>();
 
         chmod.mockResolvedValue(undefined);
         execFn.mockResolvedValue(1);
