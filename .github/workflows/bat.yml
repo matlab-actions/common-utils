@@ -19,6 +19,8 @@ jobs:
         with:
           release: latest-including-prerelease
       - uses: matlab-actions/run-tests@v2
+        with:
+          source-folder: plugins
       
   bat:
     name: Build and Test
