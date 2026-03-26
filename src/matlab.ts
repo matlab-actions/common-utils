@@ -1,10 +1,10 @@
-// Copyright 2020-2025 The MathWorks, Inc.
+// Copyright 2020-2026 The MathWorks, Inc.
 
 import { promises as fs } from "fs";
 import * as os from "os";
 import * as path from "path";
 import { v4 as uuid } from "uuid";
-import * as script from "./script";
+import * as script from "./script.js";
 
 /**
  * Helper interface to represent a MATLAB script.
@@ -103,7 +103,7 @@ export function getRunMATLABCommandScriptPath(platform: string, architecture: st
         default:
             throw new Error(`This action is not supported on ${platform} runners using the ${architecture} architecture.`);
     }
-    const rmcPath = path.join(__dirname, "bin", platformDir, `run-matlab-command${ext}`);
+    const rmcPath = path.join(import.meta.dirname, "bin", platformDir, `run-matlab-command${ext}`);
     return rmcPath;
 
 }

@@ -1,15 +1,23 @@
-// Copyright 2024-25 The MathWorks, Inc.
+// Copyright 2024-26 The MathWorks, Inc.
 
-import * as buildSummary from './buildSummary';
-import * as core from '@actions/core';
+import { jest, describe, it, expect, beforeEach } from "@jest/globals";
 
-jest.mock('@actions/core', () => ({
+jest.unstable_mockModule('@actions/core', () => ({
     summary: {
         addTable: jest.fn().mockReturnThis(),
         addHeading: jest.fn().mockReturnThis(),
         write: jest.fn().mockReturnThis(),
     },
 }));
+
+const core = await import("@actions/core");
+const buildSummary = await import("./buildSummary.js");
+
+beforeEach(() => {
+    (core.summary.addTable as jest.Mock).mockReturnThis();
+    (core.summary.addHeading as jest.Mock).mockReturnThis();
+    (core.summary.write as jest.Mock).mockReturnThis();
+});
 
 describe('summaryGeneration', () => {
     it('should process and return summary rows for valid JSON with different task statuses', () => {

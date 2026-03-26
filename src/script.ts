@@ -10,7 +10,7 @@ import * as path from "path";
  * @returns MATLAB command.
  */
 export function prepare(command: string): string {
-    const pluginsPath = path.join(__dirname, "plugins").replaceAll("'","''");
+    const pluginsPath = path.join(import.meta.dirname, "plugins").replaceAll("'","''");
     return `cd(getenv('MW_ORIG_WORKING_FOLDER')); ` +
         `addpath('` + pluginsPath + `'); `
         + command;
