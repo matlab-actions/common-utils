@@ -1,4 +1,4 @@
-// Copyright 2025 The MathWorks, Inc.
+// Copyright 2026 The MathWorks, Inc.
 import * as codeCoverageSummary from "./codeCoverageSummary";
 import * as path from "path";
 import * as fs from "fs";

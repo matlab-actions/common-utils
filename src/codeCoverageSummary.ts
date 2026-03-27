@@ -1,4 +1,4 @@
-
+// Copyright 2026 The MathWorks, Inc.
 import * as core from "@actions/core";
 import { readFileSync, existsSync } from "fs";
 import * as path from "path";
