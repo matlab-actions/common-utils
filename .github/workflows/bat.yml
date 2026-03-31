@@ -21,7 +21,7 @@ jobs:
       - uses: matlab-actions/run-tests@v2
         with:
           source-folder: plugins
-      
+
   bat:
     name: Build and Test
     runs-on: ubuntu-22.04
@@ -32,4 +32,3 @@ jobs:
           node-version: 24
       - name: Perform npm tasks
         run: npm run ci
-

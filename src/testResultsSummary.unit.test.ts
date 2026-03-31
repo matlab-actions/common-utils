@@ -1,6 +1,6 @@
 // Copyright 2025-2026 The MathWorks, Inc.
 
-import {jest, describe, it, expect, beforeAll} from "@jest/globals";
+import { jest, describe, it, expect, beforeAll } from "@jest/globals";
 import * as path from "path";
 import * as os from "os";
 import * as nodeFs from "fs";
@@ -29,7 +29,7 @@ jest.unstable_mockModule("fs", () => ({
 const core = await import("@actions/core");
 const fs = await import("fs");
 const testResultsSummary = await import("./testResultsSummary.js");
-const {MatlabTestStatus} = testResultsSummary;
+const { MatlabTestStatus } = testResultsSummary;
 
 describe("Artifact Processing Tests", () => {
     // Shared test data
@@ -59,11 +59,17 @@ describe("Artifact Processing Tests", () => {
             return { osName: "windows", workspaceParent: "C:\\" };
         if (platform.includes("linux") || platform.includes("unix") || platform.includes("aix"))
             return { osName: "linux", workspaceParent: "/home/user/" };
-        if (platform.includes("darwin")) return { osName: "mac", workspaceParent: "/Users/username/" };
+        if (platform.includes("darwin"))
+            return { osName: "mac", workspaceParent: "/Users/username/" };
         throw new Error(`Unsupported OS: ${platform}`);
     }
 
-    function copyTestDataFile(osName: string, runnerTemp: string, runId: string, actionName: string) {
+    function copyTestDataFile(
+        osName: string,
+        runnerTemp: string,
+        runId: string,
+        actionName: string,
+    ) {
         const sourceFilePath = path.join(
             import.meta.dirname,
             "test-data",
@@ -120,18 +126,10 @@ describe("Artifact Processing Tests", () => {
         expect(testResults[0][0].TestCases[8].Name).toBe("testInvalidDateFormat");
         expect(testResults[1][0].TestCases[0].Name).toBe("testNonLeapYear");
 
-        expect(testResults[0][0].TestCases[0].Status).toBe(
-            MatlabTestStatus.PASSED,
-        );
-        expect(testResults[0][0].TestCases[4].Status).toBe(
-            MatlabTestStatus.FAILED,
-        );
-        expect(testResults[0][0].TestCases[8].Status).toBe(
-            MatlabTestStatus.NOT_RUN,
-        );
-        expect(testResults[1][0].TestCases[0].Status).toBe(
-            MatlabTestStatus.INCOMPLETE,
-        );
+        expect(testResults[0][0].TestCases[0].Status).toBe(MatlabTestStatus.PASSED);
+        expect(testResults[0][0].TestCases[4].Status).toBe(MatlabTestStatus.FAILED);
+        expect(testResults[0][0].TestCases[8].Status).toBe(MatlabTestStatus.NOT_RUN);
+        expect(testResults[1][0].TestCases[0].Status).toBe(MatlabTestStatus.INCOMPLETE);
 
         expect(testResults[0][0].TestCases[0].Duration).toBeCloseTo(0.1);
         expect(testResults[0][0].TestCases[1].Duration).toBeCloseTo(0.11);
@@ -382,7 +380,11 @@ describe("Error Handling Tests", () => {
         fs.writeFileSync(invalidJsonPath, "{ invalid json content");
 
         try {
-            const result = testResultsSummary.getTestResults(process.env.RUNNER_TEMP, process.env.GITHUB_RUN_ID, "");
+            const result = testResultsSummary.getTestResults(
+                process.env.RUNNER_TEMP,
+                process.env.GITHUB_RUN_ID,
+                "",
+            );
             expect(result).toBeNull();
 
             // Verify error was logged
@@ -419,9 +421,13 @@ describe("Error Handling Tests", () => {
         fs.writeFileSync(validJsonPath, "[]"); // Empty array - valid JSON
 
         try {
-            const result = testResultsSummary.getTestResults(process.env.RUNNER_TEMP, process.env.GITHUB_RUN_ID, "");
+            const result = testResultsSummary.getTestResults(
+                process.env.RUNNER_TEMP,
+                process.env.GITHUB_RUN_ID,
+                "",
+            );
 
-            if(result){
+            if (result) {
                 // Should still return results even if deletion fails
                 expect(result).toBeDefined();
                 expect(result.TestResults).toEqual([]);

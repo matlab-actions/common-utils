@@ -60,7 +60,7 @@ describe("script generation", () => {
 describe("run command", () => {
     const helperScript = { dir: "/home/sweet/home", command: "disp('hello, world');" };
     const platform = "win32";
-    const architecture = "x64"
+    const architecture = "x64";
 
     it("ideally works", async () => {
         const chmod = jest.spyOn(fs, "chmod");
@@ -80,7 +80,11 @@ describe("run command", () => {
         chmod.mockResolvedValue(undefined);
         execFn.mockResolvedValue(0);
 
-        const actual = matlab.runCommand(helperScript, platform, architecture, execFn, ["-nojvm", "-logfile", "file"]);
+        const actual = matlab.runCommand(helperScript, platform, architecture, execFn, [
+            "-nojvm",
+            "-logfile",
+            "file",
+        ]);
         await expect(actual).resolves.toBeUndefined();
         expect(execFn.mock.calls[0][1]![1]).toBe("-nojvm");
         expect(execFn.mock.calls[0][1]![2]).toBe("-logfile");
@@ -127,8 +131,8 @@ describe("run command", () => {
 });
 
 describe("ci helper path", () => {
-    const platform = "linux"
-    const architecture = "x64"
+    const platform = "linux";
+    const architecture = "x64";
     const testExtension = (platform: string, ext: string) => {
         it(`considers the appropriate script on ${platform}`, () => {
             const actualPath = matlab.getRunMATLABCommandScriptPath(platform, architecture);
@@ -143,7 +147,7 @@ describe("ci helper path", () => {
             expect(actualPath).toContain(subdirectory);
         });
     };
-    
+
     testExtension("win32", "exe");
     testExtension("darwin", "");
     testExtension("linux", "");
@@ -154,10 +158,10 @@ describe("ci helper path", () => {
     testDirectory("linux", "x64", "glnxa64");
 
     it("errors on unsupported platform", () => {
-        expect(() => matlab.getRunMATLABCommandScriptPath('sunos',architecture)).toThrow();
-    })
+        expect(() => matlab.getRunMATLABCommandScriptPath("sunos", architecture)).toThrow();
+    });
 
     it("errors on unsupported architecture", () => {
-        expect(() => matlab.getRunMATLABCommandScriptPath(platform, 'x86')).toThrow();
-    })
+        expect(() => matlab.getRunMATLABCommandScriptPath(platform, "x86")).toThrow();
+    });
 });

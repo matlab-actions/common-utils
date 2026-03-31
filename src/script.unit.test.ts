@@ -8,8 +8,9 @@ describe("call generation", () => {
     it("ideally works", () => {
         // I know what your thinking
         const testCommand = "disp('hello world')";
-        const pluginsPath = path.join(import.meta.dirname, "plugins").replaceAll("'","''");
-        const expectedString = `cd(getenv('MW_ORIG_WORKING_FOLDER')); addpath('` + pluginsPath + `'); ${testCommand}`;
+        const pluginsPath = path.join(import.meta.dirname, "plugins").replaceAll("'", "''");
+        const expectedString =
+            `cd(getenv('MW_ORIG_WORKING_FOLDER')); addpath('` + pluginsPath + `'); ${testCommand}`;
 
         expect(script.prepare(testCommand)).toMatch(expectedString);
     });

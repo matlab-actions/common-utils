@@ -37,9 +37,9 @@ export async function generateScript(workspaceDir: string, command: string): Pro
         encoding: "utf8",
     });
 
-    return { 
-        dir: temporaryDirectory, 
-        command: scriptName 
+    return {
+        dir: temporaryDirectory,
+        command: scriptName,
     };
 }
 
@@ -53,7 +53,13 @@ export async function generateScript(workspaceDir: string, command: string): Pro
  * @param architecture Architecture of the runner (e.g., "x64")
  * @param fn ExecFn that will execute a command on the runner
  */
-export async function runCommand(hs: HelperScript, platform: string, architecture: string, fn: ExecFn, args?: string[]): Promise<void> {
+export async function runCommand(
+    hs: HelperScript,
+    platform: string,
+    architecture: string,
+    fn: ExecFn,
+    args?: string[],
+): Promise<void> {
     const rmcPath = getRunMATLABCommandScriptPath(platform, architecture);
     await fs.chmod(rmcPath, 0o777);
 
@@ -62,7 +68,7 @@ export async function runCommand(hs: HelperScript, platform: string, architectur
     let execArgs = [rmcArg];
 
     if (args) {
-       execArgs = execArgs.concat(args);
+        execArgs = execArgs.concat(args);
     }
 
     const exitCode = await fn(rmcPath, execArgs);
@@ -76,10 +82,12 @@ export async function runCommand(hs: HelperScript, platform: string, architectur
  *
  * @param platform Operating system of the runner (e.g., "win32" or "linux")
  * @param architecture Architecture of the runner (e.g., "x64")
-*/
+ */
 export function getRunMATLABCommandScriptPath(platform: string, architecture: string): string {
     if (architecture != "x64" && !(platform == "darwin" && architecture == "arm64")) {
-        throw new Error(`This action is not supported on ${platform} runners using the ${architecture} architecture.`);
+        throw new Error(
+            `This action is not supported on ${platform} runners using the ${architecture} architecture.`,
+        );
     }
     let ext;
     let platformDir;
@@ -101,9 +109,10 @@ export function getRunMATLABCommandScriptPath(platform: string, architecture: st
             platformDir = "glnxa64";
             break;
         default:
-            throw new Error(`This action is not supported on ${platform} runners using the ${architecture} architecture.`);
+            throw new Error(
+                `This action is not supported on ${platform} runners using the ${architecture} architecture.`,
+            );
     }
     const rmcPath = path.join(import.meta.dirname, "bin", platformDir, `run-matlab-command${ext}`);
     return rmcPath;
-
 }
