@@ -153,7 +153,7 @@ describe("Artifact Processing Tests", () => {
     it("should write test results data to the GitHub job summary", () => {
         if (testResultsData) {
             const actionName = process.env.GITHUB_ACTION || "";
-            testResultsSummary.addSummary(testResultsData, actionName);
+            testResultsSummary.addSummary(testResultsData, null, actionName);
 
             expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
             expect(core.summary.addHeading).toHaveBeenNthCalledWith(
@@ -357,7 +357,7 @@ describe("Error Handling Tests", () => {
 
         // This should not throw, but should log the error
         expect(() => {
-            testResultsSummary.addSummary(mockTestResultsData, "mockAction");
+            testResultsSummary.addSummary(mockTestResultsData, null, "mockAction");
         }).not.toThrow();
 
         // Verify error was logged
