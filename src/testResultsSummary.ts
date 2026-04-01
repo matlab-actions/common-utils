@@ -3,7 +3,7 @@
 import { readFileSync, unlinkSync, existsSync } from "fs";
 import * as path from "path";
 import * as core from "@actions/core";
-import { getCoverageData, generateCoverageTableHTML } from "./codeCoverageSummary";
+//import { getCoverageData, generateCoverageTableHTML } from "./codeCoverageSummary.js";
 
 export enum MatlabTestStatus {
     PASSED = "PASSED",
@@ -40,6 +40,21 @@ interface MatlabTestResultJson {
     };
 }
 
+interface CoverageMetric {
+    Executed: number;
+    Total: number;
+    Percentage: number;
+}
+
+interface CoverageData {
+    MetricLevel?: string;
+    StatementCoverage?: CoverageMetric;  
+    FunctionCoverage?: CoverageMetric;   
+    DecisionCoverage?: CoverageMetric;   
+    ConditionCoverage?: CoverageMetric;  
+    MCDCCoverage?: CoverageMetric;       
+}
+
 export interface MatlabTestFile {
     Name: string;
     Path: string;
@@ -69,8 +84,9 @@ export function processAndAddTestSummary(
     workspace: string,
 ) {
     const testResultsData = getTestResults(runnerTemp, runId, workspace);
+    const coverageData = getCoverageData(runnerTemp, runId);
     if(testResultsData) {
-        addSummary(testResultsData, actionName);
+        addSummary(testResultsData, actionName, coverageData);
     }
 }
 
@@ -136,6 +152,7 @@ export function getTestResults(
 export function addSummary(
     testResultsData: TestResultsData,
     actionName: string,
+    coverageData: CoverageData | null,
 ) {
     try {
         const helpLink =
@@ -149,7 +166,7 @@ export function addSummary(
             .addRaw(header, true);
 
         // Add coverage table if available
-        const coverageData = getCoverageData();
+        //const coverageData = getCoverageData(runnerTemp, runId);
         if (coverageData) {
             core.summary
                 .addHeading("MATLAB Code Coverage", 3)
@@ -373,4 +390,74 @@ function updateStats(testCase: MatlabTestCase, stats: TestStatistics): void {
             break;
     }
     stats.Duration += testCase.Duration;
+}
+
+function getCoverageData(
+    runnerTemp: string,
+    runId: string,
+): CoverageData | null {
+    //const runnerTemp = process.env.RUNNER_TEMP || "";
+    //const runId = process.env.GITHUB_RUN_ID || "";
+    const coveragePath = path.join(runnerTemp, `matlabCoverageResults${runId}.json`);
+    
+    if (!existsSync(coveragePath)) {
+        return null;
+    }
+
+    try {
+        const coverageData: CoverageData[] = JSON.parse(readFileSync(coveragePath, "utf8"));
+        if (!coverageData || coverageData.length === 0) {
+            return null;
+        }
+        return coverageData[coverageData.length - 1];
+    } catch (error) {
+        core.error(`Error reading coverage data: ${error}`);
+        return null;
+    }
+}
+
+function formatPercentage(percentage: number): string {
+    if (percentage === null || percentage === undefined || isNaN(percentage)) {
+        return '0.00%';
+    }
+    return percentage.toFixed(2) + '%';
+}
+
+function generateCoverageTableHTML(coverage: CoverageData): string {
+    try {
+        // Define all possible columns
+        const allColumns = [
+            { name: 'Statement', data: coverage.StatementCoverage },
+            { name: 'Function', data: coverage.FunctionCoverage },
+            { name: 'Decision', data: coverage.DecisionCoverage },
+            { name: 'Condition', data: coverage.ConditionCoverage },
+            { name: 'MC/DC', data: coverage.MCDCCoverage }
+        ];
+
+        // Filter to only include columns where data actually exists
+        const visibleColumns = allColumns.filter(col => col.data !== undefined && col.data !== null);
+
+        // Build header row
+        const headers = visibleColumns.map(col => `<th>${col.name}</th>`).join('');
+        const headerRow = `<tr align="center"><th>Metric</th>${headers}</tr>`;
+
+        // Build percentage row
+        const percentages = visibleColumns.map(col => 
+            `<td>${formatPercentage(col.data!.Percentage)}</td>`
+        ).join('');
+        const percentageRow = `<tr align="center"><td><b>Percentage</b></td>${percentages}</tr>`;
+
+        // Build covered/total row
+        const coveredTotals = visibleColumns.map(col => 
+            `<td>${col.data!.Executed}/${col.data!.Total}</td>`
+        ).join('');
+        const coveredTotalRow = `<tr align="center"><td><b>Covered/Total</b></td>${coveredTotals}</tr>`;
+
+        const tableHTML = `<table>${headerRow}${percentageRow}${coveredTotalRow}</table>`;
+        
+        return tableHTML;
+    } catch (error) {
+        core.error(`Error generating coverage table: ${error}`);
+        return '<p>Error generating coverage table</p>';
+    }
 }

@@ -18,9 +18,12 @@ interface CoverageData {
     MCDCCoverage?: CoverageMetric;       
 }
 
-export function getCoverageData(): CoverageData | null {
-    const runnerTemp = process.env.RUNNER_TEMP || "";
-    const runId = process.env.GITHUB_RUN_ID || "";
+export function getCoverageData(
+    runnerTemp: string,
+    runId: string,
+): CoverageData | null {
+    //const runnerTemp = process.env.RUNNER_TEMP || "";
+    //const runId = process.env.GITHUB_RUN_ID || "";
     const coveragePath = path.join(runnerTemp, `matlabCoverageResults${runId}.json`);
     
     if (!existsSync(coveragePath)) {
