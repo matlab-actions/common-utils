@@ -1,34 +1,32 @@
 // Copyright 2026 The MathWorks, Inc.
 import { jest, describe, it, expect, beforeEach, afterEach } from "@jest/globals";
 import * as path from "path";
-import * as nodeFs from "fs";
 import { JSDOM } from "jsdom";
 
-// Mock @actions/core
-jest.unstable_mockModule("@actions/core", () => ({
-    error: jest.fn(),
-    warning: jest.fn(),
-    info: jest.fn(),
-}));
-
 // Mock fs
+const mockUnlinkSync = jest.fn();
 jest.unstable_mockModule("fs", () => ({
-    existsSync: jest.fn(),
     readFileSync: jest.fn(),
-    unlinkSync: jest.fn(),
+    existsSync: jest.fn(),
+    unlinkSync: mockUnlinkSync,
 }));
 
 // Dynamic imports after mocking
-const core = await import("@actions/core");
 const fs = await import("fs");
 const codeCoverageSummary = await import("./codeCoverageSummary.js");
 
 describe("Coverage Data Retrieval Tests", () => {
     const runnerTemp = "/tmp/runner";
     const runId = "test-run-123";
+    let consoleSpy: jest.SpiedFunction<typeof console.error>;
 
     beforeEach(() => {
         jest.clearAllMocks();
+        consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        consoleSpy.mockRestore();
     });
 
     it("should return null when coverage file does not exist", () => {
@@ -40,6 +38,7 @@ describe("Coverage Data Retrieval Tests", () => {
         expect(fs.existsSync).toHaveBeenCalledWith(
             path.join(runnerTemp, `matlabCoverageResults${runId}.json`)
         );
+        expect(mockUnlinkSync).not.toHaveBeenCalled();
     });
 
     it("should return coverage data when file exists with valid data", () => {
@@ -69,6 +68,9 @@ describe("Coverage Data Retrieval Tests", () => {
             path.join(runnerTemp, `matlabCoverageResults${runId}.json`),
             "utf8"
         );
+        expect(mockUnlinkSync).toHaveBeenCalledWith(
+            path.join(runnerTemp, `matlabCoverageResults${runId}.json`)
+        );
     });
 
     it("should return the last element when multiple coverage data entries exist", () => {
@@ -97,6 +99,7 @@ describe("Coverage Data Retrieval Tests", () => {
         const result = codeCoverageSummary.getCoverageData(runnerTemp, runId);
 
         expect(result).toEqual(mockCoverageData[1]);
+        expect(mockUnlinkSync).toHaveBeenCalled();
     });
 
     it("should return null when coverage data array is empty", () => {
@@ -106,6 +109,7 @@ describe("Coverage Data Retrieval Tests", () => {
         const result = codeCoverageSummary.getCoverageData(runnerTemp, runId);
 
         expect(result).toBeNull();
+        expect(mockUnlinkSync).toHaveBeenCalled();
     });
 
     it("should handle JSON parse errors gracefully", () => {
@@ -115,9 +119,11 @@ describe("Coverage Data Retrieval Tests", () => {
         const result = codeCoverageSummary.getCoverageData(runnerTemp, runId);
 
         expect(result).toBeNull();
-        expect(core.error).toHaveBeenCalledWith(
-            expect.stringContaining("Error reading coverage data:")
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining("An error occurred while reading the coverage summary file"),
+            expect.anything(),
         );
+        expect(mockUnlinkSync).toHaveBeenCalled();
     });
 
     it("should handle file read errors gracefully", () => {
@@ -129,9 +135,34 @@ describe("Coverage Data Retrieval Tests", () => {
         const result = codeCoverageSummary.getCoverageData(runnerTemp, runId);
 
         expect(result).toBeNull();
-        expect(core.error).toHaveBeenCalledWith(
-            expect.stringContaining("Error reading coverage data:")
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining("An error occurred while reading the coverage summary file"),
+            expect.anything(),
         );
+        expect(mockUnlinkSync).toHaveBeenCalled();
+    });
+
+    it("should handle file deletion errors gracefully", () => {
+        (fs.existsSync as jest.Mock).mockReturnValue(true);
+        (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify([{
+            StatementCoverage: {
+                Executed: 80,
+                Total: 100,
+                Percentage: 80.0
+            }
+        }]));
+        mockUnlinkSync.mockImplementationOnce(() => {
+            throw new Error("Permission denied - cannot delete file");
+        });
+
+        const result = codeCoverageSummary.getCoverageData(runnerTemp, runId);
+
+        expect(result).toBeDefined();
+        expect(consoleSpy).toHaveBeenCalledWith(
+            expect.stringContaining("An error occurred while trying to delete the coverage summary file"),
+            expect.anything(),
+        );
+        expect(mockUnlinkSync).toHaveBeenCalled();
     });
 });
 
@@ -288,13 +319,17 @@ describe("Coverage Table HTML Generation Tests", () => {
 
     it("should return message when no coverage metrics are available", () => {
         const mockCoverageData = {
-            MetricLevel: "none"
+            MetricLevel: "none",
+            StatementCoverage: undefined,
+            FunctionCoverage: undefined,
+            DecisionCoverage: undefined,
+            ConditionCoverage: undefined,
+            MCDCCoverage: undefined
         };
 
         const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
 
         expect(html).toBe('<p>No coverage data available</p>');
-        expect(core.warning).toHaveBeenCalledWith('No visible columns found');
     });
 
     it("should handle zero percentage correctly", () => {
@@ -337,18 +372,6 @@ describe("Coverage Table HTML Generation Tests", () => {
         const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
 
         expect(html).toContain("33.33%");
-    });
-
-    it("should handle errors gracefully during HTML generation", () => {
-        // Pass something that will cause an error
-        const invalidData = null as any;
-
-        const html = codeCoverageSummary.generateCoverageTableHTML(invalidData);
-
-        expect(html).toBe('<p>Error generating coverage table</p>');
-        expect(core.error).toHaveBeenCalledWith(
-            expect.stringContaining("Error generating coverage table:")
-        );
     });
 });
 
