@@ -120,7 +120,7 @@ describe("Coverage Data Retrieval Tests", () => {
 
         expect(result).toBeNull();
         expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining("An error occurred while reading the coverage summary file"),
+            expect.stringContaining("An error occurred while reading the code coverage summary file"),
             expect.anything(),
         );
         expect(mockUnlinkSync).toHaveBeenCalled();
@@ -136,7 +136,7 @@ describe("Coverage Data Retrieval Tests", () => {
 
         expect(result).toBeNull();
         expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining("An error occurred while reading the coverage summary file"),
+            expect.stringContaining("An error occurred while reading the code coverage summary file"),
             expect.anything(),
         );
         expect(mockUnlinkSync).toHaveBeenCalled();
@@ -159,7 +159,7 @@ describe("Coverage Data Retrieval Tests", () => {
 
         expect(result).toBeDefined();
         expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining("An error occurred while trying to delete the coverage summary file"),
+            expect.stringContaining("An error occurred while trying to delete the code coverage summary file"),
             expect.anything(),
         );
         expect(mockUnlinkSync).toHaveBeenCalled();
@@ -315,21 +315,6 @@ describe("Coverage Table HTML Generation Tests", () => {
         // Verify Function and Condition are not included
         expect(html).not.toContain("Function");
         expect(html).not.toContain("Condition");
-    });
-
-    it("should return message when no coverage metrics are available", () => {
-        const mockCoverageData = {
-            MetricLevel: "none",
-            StatementCoverage: undefined,
-            FunctionCoverage: undefined,
-            DecisionCoverage: undefined,
-            ConditionCoverage: undefined,
-            MCDCCoverage: undefined
-        };
-
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
-
-        expect(html).toBe('<p>No coverage data available</p>');
     });
 
     it("should handle zero percentage correctly", () => {

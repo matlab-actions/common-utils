@@ -28,10 +28,12 @@ export function getCoverageData(
     if (existsSync(coveragePath)) {
         try {
             const coverageArray: CoverageData[] = JSON.parse(readFileSync(coveragePath, "utf8"));
-            coverageData = coverageArray[coverageArray.length - 1];
+            if (coverageArray.length !== 0) {
+                coverageData = coverageArray[coverageArray.length - 1];
+            } 
         } catch (e) {
             console.error(
-                `An error occured while reading the code coverage summary file ${coveragePath}:`,
+                `An error occurred while reading the code coverage summary file ${coveragePath}:`,
                 e,
             );
         } finally {
