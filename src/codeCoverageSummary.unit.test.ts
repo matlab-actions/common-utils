@@ -15,6 +15,7 @@ jest.unstable_mockModule("@actions/core", () => ({
 jest.unstable_mockModule("fs", () => ({
     existsSync: jest.fn(),
     readFileSync: jest.fn(),
+    unlinkSync: jest.fn(),
 }));
 
 // Dynamic imports after mocking
