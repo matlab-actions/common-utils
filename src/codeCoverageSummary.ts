@@ -11,8 +11,8 @@ interface CoverageMetric {
 
 export interface CoverageData {
     MetricLevel?: string;
-    StatementCoverage?: CoverageMetric;  
     FunctionCoverage?: CoverageMetric;   
+    StatementCoverage?: CoverageMetric;  
     DecisionCoverage?: CoverageMetric;   
     ConditionCoverage?: CoverageMetric;  
     MCDCCoverage?: CoverageMetric;       
@@ -61,8 +61,8 @@ export function generateCoverageTableHTML(coverage: CoverageData): string {
 
     // Define all possible columns
     const allColumns = [
-        { name: 'Statement', data: coverage.StatementCoverage },
         { name: 'Function', data: coverage.FunctionCoverage },
+        { name: 'Statement', data: coverage.StatementCoverage },
         { name: 'Decision', data: coverage.DecisionCoverage },
         { name: 'Condition', data: coverage.ConditionCoverage },
         { name: 'MC/DC', data: coverage.MCDCCoverage }
