@@ -15,18 +15,20 @@ Changes should be made on a new branch. The new branch should be merged to the m
 After the pull request has been approved and merged to main, follow the Github process for [creating a new release](https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository). The release must follow semantic versioning (ex: vX.Y.Z). This will kick off a new pipeline execution, and the action will automatically be published to the GitHub Actions Marketplace if the pipeline finishes successfully. Check the [GitHub Marketplace](https://github.com/marketplace/actions/setup-matlab) and check the major version in the repository (ex: v1 for v1.0.0) to ensure that the new semantically versioned tag is available.
 
 <<<<<<< HEAD
+
 ## Adding a Pre-Commit Hook
 
 You can run all CI checks before each commit by adding a pre-commit hook. To do so, navigate to the repository root folder and run the following commands:
 
-_bash (Linux/macOS)_
-=======
+# _bash (Linux/macOS)_
+
 ## Adding a pre-commit hook
 
 You may choose to run all CI checks before each commit by adding a pre-commit hook. To do so, navigate to the repository root directory, and run the following commands:
 
 _bash (Unix/macOS)_
->>>>>>> 1cc85ef (rebase)
+
+> > > > > > > 1cc85ef (rebase)
 
 ```sh
 echo '#!/bin/sh' > .git/hooks/pre-commit
@@ -49,8 +51,9 @@ Add-Content .git\hooks\pre-commit 'npm run ci'
 ```
 
 > **Note:**  
-<<<<<<< HEAD
+> <<<<<<< HEAD
 > Git hooks are not version-controlled, so you need to set up this hook for each fresh clone of the repository.
-=======
+> =======
 > Git hooks are not version-controlled, so you’ll need to set up this hook for each fresh clone of the repository.
->>>>>>> 1cc85ef (rebase)
+>
+> > > > > > > 1cc85ef (rebase)
