@@ -18,7 +18,7 @@ export interface CoverageData {
     MCDCCoverage?: CoverageMetric;       
 }
 
-export function getCoverageData(
+export function getCoverageResults(
     runnerTemp: string,
     runId: string,
 ): CoverageData | null {
@@ -57,7 +57,7 @@ function formatPercentage(percentage: number): string {
     return percentage.toFixed(2) + '%';
 }
 
-export function generateCoverageTableHTML(coverage: CoverageData): string {
+export function getCoverageTable(coverage: CoverageData): string {
 
     // Define all possible columns
     const allColumns = [

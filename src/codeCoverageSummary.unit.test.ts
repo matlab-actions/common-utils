@@ -32,7 +32,7 @@ describe("Coverage Data Retrieval Tests", () => {
     it("should return null when coverage file does not exist", () => {
         (fs.existsSync as jest.Mock).mockReturnValue(false);
 
-        const result = codeCoverageSummary.getCoverageData(runnerTemp, runId);
+        const result = codeCoverageSummary.getCoverageResults(runnerTemp, runId);
 
         expect(result).toBeNull();
         expect(fs.existsSync).toHaveBeenCalledWith(
@@ -61,7 +61,7 @@ describe("Coverage Data Retrieval Tests", () => {
         (fs.existsSync as jest.Mock).mockReturnValue(true);
         (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(mockCoverageData));
 
-        const result = codeCoverageSummary.getCoverageData(runnerTemp, runId);
+        const result = codeCoverageSummary.getCoverageResults(runnerTemp, runId);
 
         expect(result).toEqual(mockCoverageData[0]);
         expect(fs.readFileSync).toHaveBeenCalledWith(
@@ -96,7 +96,7 @@ describe("Coverage Data Retrieval Tests", () => {
         (fs.existsSync as jest.Mock).mockReturnValue(true);
         (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify(mockCoverageData));
 
-        const result = codeCoverageSummary.getCoverageData(runnerTemp, runId);
+        const result = codeCoverageSummary.getCoverageResults(runnerTemp, runId);
 
         expect(result).toEqual(mockCoverageData[1]);
         expect(mockUnlinkSync).toHaveBeenCalled();
@@ -106,7 +106,7 @@ describe("Coverage Data Retrieval Tests", () => {
         (fs.existsSync as jest.Mock).mockReturnValue(true);
         (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify([]));
 
-        const result = codeCoverageSummary.getCoverageData(runnerTemp, runId);
+        const result = codeCoverageSummary.getCoverageResults(runnerTemp, runId);
 
         expect(result).toBeNull();
         expect(mockUnlinkSync).toHaveBeenCalled();
@@ -116,7 +116,7 @@ describe("Coverage Data Retrieval Tests", () => {
         (fs.existsSync as jest.Mock).mockReturnValue(true);
         (fs.readFileSync as jest.Mock).mockReturnValue("{ invalid json");
 
-        const result = codeCoverageSummary.getCoverageData(runnerTemp, runId);
+        const result = codeCoverageSummary.getCoverageResults(runnerTemp, runId);
 
         expect(result).toBeNull();
         expect(consoleSpy).toHaveBeenCalledWith(
@@ -132,7 +132,7 @@ describe("Coverage Data Retrieval Tests", () => {
             throw new Error("Permission denied");
         });
 
-        const result = codeCoverageSummary.getCoverageData(runnerTemp, runId);
+        const result = codeCoverageSummary.getCoverageResults(runnerTemp, runId);
 
         expect(result).toBeNull();
         expect(consoleSpy).toHaveBeenCalledWith(
@@ -155,7 +155,7 @@ describe("Coverage Data Retrieval Tests", () => {
             throw new Error("Permission denied - cannot delete file");
         });
 
-        const result = codeCoverageSummary.getCoverageData(runnerTemp, runId);
+        const result = codeCoverageSummary.getCoverageResults(runnerTemp, runId);
 
         expect(result).toBeDefined();
         expect(consoleSpy).toHaveBeenCalledWith(
@@ -201,7 +201,7 @@ describe("Coverage Table HTML Generation Tests", () => {
             }
         };
 
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
+        const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
 
         const dom = new JSDOM(html);
         const document = dom.window.document;
@@ -253,7 +253,7 @@ describe("Coverage Table HTML Generation Tests", () => {
             }
         };
 
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
+        const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
 
         const dom = new JSDOM(html);
         const document = dom.window.document;
@@ -296,7 +296,7 @@ describe("Coverage Table HTML Generation Tests", () => {
             }
         };
 
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
+        const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
 
         const dom = new JSDOM(html);
         const document = dom.window.document;
@@ -326,7 +326,7 @@ describe("Coverage Table HTML Generation Tests", () => {
             }
         };
 
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
+        const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
 
         expect(html).toContain("0.00%");
     });
@@ -340,7 +340,7 @@ describe("Coverage Table HTML Generation Tests", () => {
             }
         };
 
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
+        const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
 
         expect(html).toContain("100.00%");
     });
@@ -354,7 +354,7 @@ describe("Coverage Table HTML Generation Tests", () => {
             }
         };
 
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
+        const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
 
         expect(html).toContain("33.33%");
     });
@@ -370,7 +370,7 @@ describe("HTML Structure and Alignment Tests", () => {
             }
         };
 
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
+        const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
 
         const dom = new JSDOM(html);
         const document = dom.window.document;
@@ -395,7 +395,7 @@ describe("HTML Structure and Alignment Tests", () => {
             }
         };
 
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
+        const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
 
         // Should not throw when parsing
         expect(() => {
@@ -414,7 +414,7 @@ describe("Edge Cases and Special Values", () => {
             }
         };
 
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
+        const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
 
         expect(html).toContain("0.00%");
     });
@@ -428,7 +428,7 @@ describe("Edge Cases and Special Values", () => {
             }
         };
 
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
+        const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
 
         expect(html).toContain("0.00%");
     });
@@ -442,7 +442,7 @@ describe("Edge Cases and Special Values", () => {
             }
         };
 
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
+        const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
 
         expect(html).toContain("0.00%");
     });
@@ -456,7 +456,7 @@ describe("Edge Cases and Special Values", () => {
             }
         };
 
-        const html = codeCoverageSummary.generateCoverageTableHTML(mockCoverageData);
+        const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
 
         expect(html).toContain("100.00%");
         expect(html).toContain("999999/1000000");
