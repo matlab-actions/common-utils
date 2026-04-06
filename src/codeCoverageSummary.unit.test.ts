@@ -218,8 +218,8 @@ describe("Coverage Table HTML Generation Tests", () => {
         const headerRow = rows?.[0];
         expect(headerRow?.children.length).toBe(6);
         expect(headerRow?.children[0]?.textContent).toBe("Metric");
-        expect(headerRow?.children[1]?.textContent).toBe("Statement");
         expect(headerRow?.children[2]?.textContent).toBe("Function");
+        expect(headerRow?.children[1]?.textContent).toBe("Statement");
         expect(headerRow?.children[3]?.textContent).toBe("Decision");
         expect(headerRow?.children[4]?.textContent).toBe("Condition");
         expect(headerRow?.children[5]?.textContent).toBe("MC/DC");
