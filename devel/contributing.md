@@ -40,5 +40,5 @@ Set-Content .git\hooks\pre-commit '#!/bin/sh'
 Add-Content .git\hooks\pre-commit 'npm run ci'
 ```
 
-> **Note:**  
+> **Note:**
 > Git hooks are not version-controlled, so you need to set up this hook for each fresh clone of the repository.
