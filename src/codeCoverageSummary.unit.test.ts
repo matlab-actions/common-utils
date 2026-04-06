@@ -174,15 +174,15 @@ describe("Coverage Table HTML Generation Tests", () => {
     it("should generate HTML table with all coverage metrics", () => {
         const mockCoverageData = {
             MetricLevel: "all",
-            StatementCoverage: {
-                Executed: 80,
-                Total: 100,
-                Percentage: 80.55
-            },
             FunctionCoverage: {
                 Executed: 15,
                 Total: 20,
                 Percentage: 75.0
+            },
+            StatementCoverage: {
+                Executed: 80,
+                Total: 100,
+                Percentage: 80.55
             },
             DecisionCoverage: {
                 Executed: 45,
@@ -218,8 +218,8 @@ describe("Coverage Table HTML Generation Tests", () => {
         const headerRow = rows?.[0];
         expect(headerRow?.children.length).toBe(6);
         expect(headerRow?.children[0]?.textContent).toBe("Metric");
-        expect(headerRow?.children[2]?.textContent).toBe("Function");
-        expect(headerRow?.children[1]?.textContent).toBe("Statement");
+        expect(headerRow?.children[1]?.textContent).toBe("Function");
+        expect(headerRow?.children[2]?.textContent).toBe("Statement");
         expect(headerRow?.children[3]?.textContent).toBe("Decision");
         expect(headerRow?.children[4]?.textContent).toBe("Condition");
         expect(headerRow?.children[5]?.textContent).toBe("MC/DC");
@@ -227,8 +227,8 @@ describe("Coverage Table HTML Generation Tests", () => {
         // Verify percentage row
         const percentageRow = rows?.[1];
         expect(percentageRow?.children[0]?.textContent).toBe("Percentage");
-        expect(percentageRow?.children[1]?.textContent).toBe("80.55%");
-        expect(percentageRow?.children[2]?.textContent).toBe("75.00%");
+        expect(percentageRow?.children[1]?.textContent).toBe("75.00%");
+        expect(percentageRow?.children[2]?.textContent).toBe("80.55%");
         expect(percentageRow?.children[3]?.textContent).toBe("90.00%");
         expect(percentageRow?.children[4]?.textContent).toBe("75.00%");
         expect(percentageRow?.children[5]?.textContent).toBe("80.00%");
@@ -236,8 +236,8 @@ describe("Coverage Table HTML Generation Tests", () => {
         // Verify covered/total row
         const coveredTotalRow = rows?.[2];
         expect(coveredTotalRow?.children[0]?.textContent).toBe("Covered/Total");
-        expect(coveredTotalRow?.children[1]?.textContent).toBe("80/100");
-        expect(coveredTotalRow?.children[2]?.textContent).toBe("15/20");
+        expect(coveredTotalRow?.children[1]?.textContent).toBe("15/20");
+        expect(coveredTotalRow?.children[2]?.textContent).toBe("80/100");
         expect(coveredTotalRow?.children[3]?.textContent).toBe("45/50");
         expect(coveredTotalRow?.children[4]?.textContent).toBe("30/40");
         expect(coveredTotalRow?.children[5]?.textContent).toBe("20/25");
