@@ -70,7 +70,7 @@ export function processAndAddTestSummary(
 ) {
     const testResultsData = getTestResults(runnerTemp, runId, workspace);
     const coverageResultsData = getCoverageResults(runnerTemp, runId);
-    if(testResultsData || coverageResultsData) {
+    if (testResultsData || coverageResultsData) {
         addSummary(testResultsData, coverageResultsData, actionName);
     }
 }
@@ -143,8 +143,8 @@ export function addSummary(
         // Add test results table if available
         if (testResultsData) {
             const helpLink =
-            `<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"` +
-            ` target="_blank" title="View documentation">ℹ️</a>`;
+                `<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"` +
+                ` target="_blank" title="View documentation">ℹ️</a>`;
             const header = getTestHeader(testResultsData.Stats);
 
             core.summary
@@ -161,9 +161,7 @@ export function addSummary(
         // Add detailed test results
         if (testResultsData) {
             const detailedResults = getDetailedResults(testResultsData.TestResults);
-            core.summary
-                .addHeading("All tests", 3)
-                .addRaw(detailedResults, true);
+            core.summary.addHeading("All tests", 3).addRaw(detailedResults, true);
         }
     } catch (e) {
         console.error("An error occurred while adding the test results to the summary:", e);
@@ -175,19 +173,39 @@ export function getTestHeader(stats: TestStatistics): string {
         `<table>
             <tr align="center">
                 <th>Total tests</th>
-                <th>Passed ` + getStatusEmoji(MatlabTestStatus.PASSED) + `</th>
-                <th>Failed ` + getStatusEmoji(MatlabTestStatus.FAILED) + `</th>
-                <th>Incomplete ` + getStatusEmoji(MatlabTestStatus.INCOMPLETE) + `</th>
-                <th>Not Run ` + getStatusEmoji(MatlabTestStatus.NOT_RUN) + `</th>
+                <th>Passed ` +
+        getStatusEmoji(MatlabTestStatus.PASSED) +
+        `</th>
+                <th>Failed ` +
+        getStatusEmoji(MatlabTestStatus.FAILED) +
+        `</th>
+                <th>Incomplete ` +
+        getStatusEmoji(MatlabTestStatus.INCOMPLETE) +
+        `</th>
+                <th>Not Run ` +
+        getStatusEmoji(MatlabTestStatus.NOT_RUN) +
+        `</th>
                 <th>Duration(s) ⌛</th>
             </tr>
             <tr align="center">
-                <td>` + stats.Total + `</td>
-                <td>` + stats.Passed + `</td>
-                <td>` + stats.Failed + `</td>
-                <td>` + stats.Incomplete + `</td>
-                <td>` + stats.NotRun + `</td>
-                <td>` + stats.Duration.toFixed(2) + `</td>
+                <td>` +
+        stats.Total +
+        `</td>
+                <td>` +
+        stats.Passed +
+        `</td>
+                <td>` +
+        stats.Failed +
+        `</td>
+                <td>` +
+        stats.Incomplete +
+        `</td>
+                <td>` +
+        stats.NotRun +
+        `</td>
+                <td>` +
+        stats.Duration.toFixed(2) +
+        `</td>
             </tr>
         </table>`
     );
@@ -200,10 +218,10 @@ export function getDetailedResults(testResults: MatlabTestFile[][]): string {
                 <th>Test File</th>
                 <th>Duration(s)</th>
             </tr>` +
-            testResults
-                .flat()
-                .map((file) => generateTestFileRow(file))
-                .join("") +
+        testResults
+            .flat()
+            .map((file) => generateTestFileRow(file))
+            .join("") +
         `</table>`
     );
 }
@@ -216,11 +234,17 @@ function generateTestFileRow(file: MatlabTestFile): string {
     return (
         `<tr>
             <td>
-                <details` + (file.Status !== MatlabTestStatus.PASSED ? ` open` : ``) + `>
+                <details` +
+        (file.Status !== MatlabTestStatus.PASSED ? ` open` : ``) +
+        `>
                     <summary>
-                        <b title="` + displayPath + `">` +
-                            statusEmoji + ` ` + file.Name +
-                        `</b>
+                        <b title="` +
+        displayPath +
+        `">` +
+        statusEmoji +
+        ` ` +
+        file.Name +
+        `</b>
                     </summary>
                     <br>
                     <table>
@@ -229,15 +253,15 @@ function generateTestFileRow(file: MatlabTestFile): string {
                             <th>Diagnostics</th>
                             <th>Duration(s)</th>
                         </tr>` +
-                        file.TestCases.map((tc) => generateTestCaseRow(tc)).join("") +
-                    `</table>
+        file.TestCases.map((tc) => generateTestCaseRow(tc)).join("") +
+        `</table>
                 </details>
             </td>
             <td align="center" valign="top">` +
-                `<b>` +
-                    file.Duration.toFixed(2) +
-                `</b>` +
-            `</td>
+        `<b>` +
+        file.Duration.toFixed(2) +
+        `</b>` +
+        `</td>
         </tr>`
     );
 }
@@ -246,26 +270,32 @@ function generateTestCaseRow(testCase: MatlabTestCase): string {
     const statusEmoji = getStatusEmoji(testCase.Status);
     const diagnosticsColumn =
         testCase.Diagnostics.length > 0
-            ? testCase.Diagnostics
-                .map(
-                    (diagnostic) =>
-                        `<details>` +
-                            `<summary>` +
-                                diagnostic.Event +
-                            `</summary>` +
-                            `<pre style="font-family: monospace; white-space: pre;">` +
-                                diagnostic.Report.replace(/\n/g, "<br>").trim() +
-                            `</pre>` +
-                        `</details>`,
-                )
-                .join("")
+            ? testCase.Diagnostics.map(
+                  (diagnostic) =>
+                      `<details>` +
+                      `<summary>` +
+                      diagnostic.Event +
+                      `</summary>` +
+                      `<pre style="font-family: monospace; white-space: pre;">` +
+                      diagnostic.Report.replace(/\n/g, "<br>").trim() +
+                      `</pre>` +
+                      `</details>`,
+              ).join("")
             : "";
 
     return (
         `<tr>` +
-            `<td>` + statusEmoji + ` ` + testCase.Name + `</td>` +
-            `<td>` + diagnosticsColumn + `</td>` +
-            `<td align="center">` + testCase.Duration.toFixed(2) + `</td>` +
+        `<td>` +
+        statusEmoji +
+        ` ` +
+        testCase.Name +
+        `</td>` +
+        `<td>` +
+        diagnosticsColumn +
+        `</td>` +
+        `<td align="center">` +
+        testCase.Duration.toFixed(2) +
+        `</td>` +
         `</tr>`
     );
 }
@@ -337,7 +367,9 @@ function determineTestStatus(testResult: MatlabTestResultJson): MatlabTestStatus
     }
 }
 
-function processDiagnostics(diagnostics: MatlabTestDiagnostics | MatlabTestDiagnostics[] | undefined): MatlabTestDiagnostics[] {
+function processDiagnostics(
+    diagnostics: MatlabTestDiagnostics | MatlabTestDiagnostics[] | undefined,
+): MatlabTestDiagnostics[] {
     if (!diagnostics) return [];
 
     return Array.isArray(diagnostics) ? diagnostics : [diagnostics];

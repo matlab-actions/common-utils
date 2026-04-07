@@ -36,7 +36,7 @@ describe("Coverage Data Retrieval Tests", () => {
 
         expect(result).toBeNull();
         expect(fs.existsSync).toHaveBeenCalledWith(
-            path.join(runnerTemp, `matlabCoverageResults${runId}.json`)
+            path.join(runnerTemp, `matlabCoverageResults${runId}.json`),
         );
         expect(mockUnlinkSync).not.toHaveBeenCalled();
     });
@@ -48,14 +48,14 @@ describe("Coverage Data Retrieval Tests", () => {
                 StatementCoverage: {
                     Executed: 80,
                     Total: 100,
-                    Percentage: 80.0
+                    Percentage: 80.0,
                 },
                 FunctionCoverage: {
                     Executed: 15,
                     Total: 20,
-                    Percentage: 75.0
-                }
-            }
+                    Percentage: 75.0,
+                },
+            },
         ];
 
         (fs.existsSync as jest.Mock).mockReturnValue(true);
@@ -66,10 +66,10 @@ describe("Coverage Data Retrieval Tests", () => {
         expect(result).toEqual(mockCoverageData[0]);
         expect(fs.readFileSync).toHaveBeenCalledWith(
             path.join(runnerTemp, `matlabCoverageResults${runId}.json`),
-            "utf8"
+            "utf8",
         );
         expect(mockUnlinkSync).toHaveBeenCalledWith(
-            path.join(runnerTemp, `matlabCoverageResults${runId}.json`)
+            path.join(runnerTemp, `matlabCoverageResults${runId}.json`),
         );
     });
 
@@ -80,17 +80,17 @@ describe("Coverage Data Retrieval Tests", () => {
                 StatementCoverage: {
                     Executed: 70,
                     Total: 100,
-                    Percentage: 70.0
-                }
+                    Percentage: 70.0,
+                },
             },
             {
                 MetricLevel: "decision",
                 DecisionCoverage: {
                     Executed: 90,
                     Total: 100,
-                    Percentage: 90.0
-                }
-            }
+                    Percentage: 90.0,
+                },
+            },
         ];
 
         (fs.existsSync as jest.Mock).mockReturnValue(true);
@@ -120,7 +120,9 @@ describe("Coverage Data Retrieval Tests", () => {
 
         expect(result).toBeNull();
         expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining("An error occurred while reading the code coverage summary file"),
+            expect.stringContaining(
+                "An error occurred while reading the code coverage summary file",
+            ),
             expect.anything(),
         );
         expect(mockUnlinkSync).toHaveBeenCalled();
@@ -136,7 +138,9 @@ describe("Coverage Data Retrieval Tests", () => {
 
         expect(result).toBeNull();
         expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining("An error occurred while reading the code coverage summary file"),
+            expect.stringContaining(
+                "An error occurred while reading the code coverage summary file",
+            ),
             expect.anything(),
         );
         expect(mockUnlinkSync).toHaveBeenCalled();
@@ -144,13 +148,17 @@ describe("Coverage Data Retrieval Tests", () => {
 
     it("should handle file deletion errors gracefully", () => {
         (fs.existsSync as jest.Mock).mockReturnValue(true);
-        (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify([{
-            StatementCoverage: {
-                Executed: 80,
-                Total: 100,
-                Percentage: 80.0
-            }
-        }]));
+        (fs.readFileSync as jest.Mock).mockReturnValue(
+            JSON.stringify([
+                {
+                    StatementCoverage: {
+                        Executed: 80,
+                        Total: 100,
+                        Percentage: 80.0,
+                    },
+                },
+            ]),
+        );
         mockUnlinkSync.mockImplementationOnce(() => {
             throw new Error("Permission denied - cannot delete file");
         });
@@ -159,7 +167,9 @@ describe("Coverage Data Retrieval Tests", () => {
 
         expect(result).toBeDefined();
         expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining("An error occurred while trying to delete the code coverage summary file"),
+            expect.stringContaining(
+                "An error occurred while trying to delete the code coverage summary file",
+            ),
             expect.anything(),
         );
         expect(mockUnlinkSync).toHaveBeenCalled();
@@ -177,28 +187,28 @@ describe("Coverage Table HTML Generation Tests", () => {
             FunctionCoverage: {
                 Executed: 15,
                 Total: 20,
-                Percentage: 75.0
+                Percentage: 75.0,
             },
             StatementCoverage: {
                 Executed: 80,
                 Total: 100,
-                Percentage: 80.55
+                Percentage: 80.55,
             },
             DecisionCoverage: {
                 Executed: 45,
                 Total: 50,
-                Percentage: 90.0
+                Percentage: 90.0,
             },
             ConditionCoverage: {
                 Executed: 30,
                 Total: 40,
-                Percentage: 75.0
+                Percentage: 75.0,
             },
             MCDCCoverage: {
                 Executed: 20,
                 Total: 25,
-                Percentage: 80.0
-            }
+                Percentage: 80.0,
+            },
         };
 
         const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
@@ -249,8 +259,8 @@ describe("Coverage Table HTML Generation Tests", () => {
             StatementCoverage: {
                 Executed: 85,
                 Total: 100,
-                Percentage: 85.0
-            }
+                Percentage: 85.0,
+            },
         };
 
         const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
@@ -282,18 +292,18 @@ describe("Coverage Table HTML Generation Tests", () => {
             StatementCoverage: {
                 Executed: 80,
                 Total: 100,
-                Percentage: 80.0
+                Percentage: 80.0,
             },
             DecisionCoverage: {
                 Executed: 45,
                 Total: 50,
-                Percentage: 90.0
+                Percentage: 90.0,
             },
             MCDCCoverage: {
                 Executed: 20,
                 Total: 25,
-                Percentage: 80.0
-            }
+                Percentage: 80.0,
+            },
         };
 
         const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
@@ -322,8 +332,8 @@ describe("Coverage Table HTML Generation Tests", () => {
             StatementCoverage: {
                 Executed: 0,
                 Total: 100,
-                Percentage: 0
-            }
+                Percentage: 0,
+            },
         };
 
         const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
@@ -336,8 +346,8 @@ describe("Coverage Table HTML Generation Tests", () => {
             StatementCoverage: {
                 Executed: 100,
                 Total: 100,
-                Percentage: 100
-            }
+                Percentage: 100,
+            },
         };
 
         const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
@@ -350,8 +360,8 @@ describe("Coverage Table HTML Generation Tests", () => {
             StatementCoverage: {
                 Executed: 333,
                 Total: 1000,
-                Percentage: 33.333333
-            }
+                Percentage: 33.333333,
+            },
         };
 
         const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
@@ -366,8 +376,8 @@ describe("HTML Structure and Alignment Tests", () => {
             StatementCoverage: {
                 Executed: 80,
                 Total: 100,
-                Percentage: 80.0
-            }
+                Percentage: 80.0,
+            },
         };
 
         const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
@@ -376,7 +386,7 @@ describe("HTML Structure and Alignment Tests", () => {
         const document = dom.window.document;
 
         const rows = document.querySelectorAll("tr");
-        rows.forEach(row => {
+        rows.forEach((row) => {
             expect(row.getAttribute("align")).toBe("center");
         });
     });
@@ -386,13 +396,13 @@ describe("HTML Structure and Alignment Tests", () => {
             StatementCoverage: {
                 Executed: 80,
                 Total: 100,
-                Percentage: 80.0
+                Percentage: 80.0,
             },
             FunctionCoverage: {
                 Executed: 15,
                 Total: 20,
-                Percentage: 75.0
-            }
+                Percentage: 75.0,
+            },
         };
 
         const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
@@ -410,8 +420,8 @@ describe("Edge Cases and Special Values", () => {
             StatementCoverage: {
                 Executed: 0,
                 Total: 0,
-                Percentage: NaN
-            }
+                Percentage: NaN,
+            },
         };
 
         const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
@@ -424,8 +434,8 @@ describe("Edge Cases and Special Values", () => {
             StatementCoverage: {
                 Executed: 0,
                 Total: 0,
-                Percentage: undefined as any
-            }
+                Percentage: undefined as any,
+            },
         };
 
         const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
@@ -438,8 +448,8 @@ describe("Edge Cases and Special Values", () => {
             StatementCoverage: {
                 Executed: 0,
                 Total: 0,
-                Percentage: null as any
-            }
+                Percentage: null as any,
+            },
         };
 
         const html = codeCoverageSummary.getCoverageTable(mockCoverageData);
@@ -452,8 +462,8 @@ describe("Edge Cases and Special Values", () => {
             StatementCoverage: {
                 Executed: 999999,
                 Total: 1000000,
-                Percentage: 99.9999
-            }
+                Percentage: 99.9999,
+            },
         };
 
         const html = codeCoverageSummary.getCoverageTable(mockCoverageData);

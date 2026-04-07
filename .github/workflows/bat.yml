@@ -15,16 +15,16 @@ jobs:
           - os: macos-latest
     steps:
       - uses: actions/checkout@v6
-      - uses: matlab-actions/setup-matlab@v2
+      - uses: matlab-actions/setup-matlab@v3
         with:
           release: latest-including-prerelease
-      - uses: matlab-actions/run-tests@v2
+      - uses: matlab-actions/run-tests@v3
         with:
           source-folder: plugins
-      
+
   bat:
     name: Build and Test
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -32,4 +32,3 @@ jobs:
           node-version: 24
       - name: Perform npm tasks
         run: npm run ci
-
