@@ -3,6 +3,7 @@
 import { readFileSync, unlinkSync, existsSync } from "fs";
 import * as path from "path";
 import * as core from "@actions/core";
+import { getCoverageResults, getCoverageTable, CoverageData } from "./codeCoverageSummary.js";
 
 export enum MatlabTestStatus {
     PASSED = "PASSED",
@@ -68,8 +69,9 @@ export function processAndAddTestSummary(
     workspace: string,
 ) {
     const testResultsData = getTestResults(runnerTemp, runId, workspace);
-    if(testResultsData) {
-        addSummary(testResultsData, actionName);
+    const coverageResultsData = getCoverageResults(runnerTemp, runId);
+    if(testResultsData || coverageResultsData) {
+        addSummary(testResultsData, coverageResultsData, actionName);
     }
 }
 
@@ -133,21 +135,36 @@ export function getTestResults(
 }
 
 export function addSummary(
-    testResultsData: TestResultsData,
+    testResultsData: TestResultsData | null,
+    coverageResultsData: CoverageData | null,
     actionName: string,
 ) {
     try {
-        const helpLink =
+        // Add test results table if available
+        if (testResultsData) {
+            const helpLink =
             `<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"` +
             ` target="_blank" title="View documentation">ℹ️</a>`;
-        const header = getTestHeader(testResultsData.Stats);
-        const detailedResults = getDetailedResults(testResultsData.TestResults);
+            const header = getTestHeader(testResultsData.Stats);
 
-        core.summary
-            .addHeading("MATLAB Test Results (" + actionName + ") " + helpLink)
-            .addRaw(header, true)
-            .addHeading("All tests", 3)
-            .addRaw(detailedResults, true);
+            core.summary
+                .addHeading("MATLAB Test Results (" + actionName + ") " + helpLink)
+                .addRaw(header, true);
+        }
+        // Add coverage table if available
+        if (coverageResultsData) {
+            core.summary
+                .addHeading("MATLAB Code Coverage", 3)
+                .addRaw(getCoverageTable(coverageResultsData), true);
+        }
+
+        // Add detailed test results
+        if (testResultsData) {
+            const detailedResults = getDetailedResults(testResultsData.TestResults);
+            core.summary
+                .addHeading("All tests", 3)
+                .addRaw(detailedResults, true);
+        }
     } catch (e) {
         console.error("An error occurred while adding the test results to the summary:", e);
     }
