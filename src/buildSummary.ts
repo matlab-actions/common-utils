@@ -3,11 +3,9 @@ import * as core from "@actions/core";
 import { join } from "path";
 import { readFileSync, unlinkSync, existsSync } from "fs";
 
-export function addSummary(taskSummaryTableRows: string[][], actionName: string) {
+export function addSummary(taskSummaryTableRows: string[][]) {
     try {
-        core.summary
-            .addHeading("MATLAB Build Results (" + actionName + ") ")
-            .addTable(taskSummaryTableRows);
+        core.summary.addHeading("MATLAB Build Results").addTable(taskSummaryTableRows);
     } catch (e) {
         console.error("An error occurred while adding the build results table to the summary:", e);
     }
@@ -45,7 +43,7 @@ export function interpretSkipReason(skipReason: string) {
     }
 }
 
-export function processAndAddBuildSummary(runnerTemp: string, runId: string, actionName: string) {
+export function processAndAddBuildSummary(runnerTemp: string, runId: string) {
     const header = [
         { data: "MATLAB Task", header: true },
         { data: "Status", header: true },
@@ -73,6 +71,6 @@ export function processAndAddBuildSummary(runnerTemp: string, runId: string, act
                 );
             }
         }
-        addSummary(taskSummaryTable, actionName);
+        addSummary(taskSummaryTable);
     }
 }
