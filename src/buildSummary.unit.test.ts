@@ -78,14 +78,12 @@ describe("summaryGeneration", () => {
             ["MATLAB Task", "Status", "Description", "Duration (HH:mm:ss)"],
             ["Test Task", "🔴 Failed", "A test task", "00:00:10"],
         ];
-        const actionName = "run-build";
-
-        buildSummary.addSummary(mockTableRows, actionName);
+        buildSummary.addSummary(mockTableRows);
 
         expect(core.summary.addHeading).toHaveBeenCalledTimes(1);
         expect(core.summary.addHeading).toHaveBeenNthCalledWith(
             1,
-            expect.stringContaining("MATLAB Build Results (" + actionName + ")"),
+            expect.stringContaining("MATLAB Build Results"),
         );
         expect(core.summary.addTable).toHaveBeenCalledTimes(1);
         expect(core.summary.addTable).toHaveBeenCalledWith(mockTableRows);

@@ -12,6 +12,7 @@ classdef tParallelizableBuildSummaryPlugin < matlab.unittest.TestCase
         function setupPath(testCase)
             import matlab.unittest.fixtures.PathFixture;
 
+            testCase.assumeFalse(isMATLABReleaseOlderThan("R2026a"));
             testCase.applyFixture(PathFixture(fileparts(fileparts(mfilename("fullpath")))));
         end
     end
