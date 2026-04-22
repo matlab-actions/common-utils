@@ -62,16 +62,11 @@ export interface TestResultsData {
     Stats: TestStatistics;
 }
 
-export function processAndAddTestSummary(
-    runnerTemp: string,
-    runId: string,
-    actionName: string,
-    workspace: string,
-) {
+export function processAndAddTestSummary(runnerTemp: string, runId: string, workspace: string) {
     const testResultsData = getTestResults(runnerTemp, runId, workspace);
     const coverageResultsData = getCoverageResults(runnerTemp, runId);
     if (testResultsData || coverageResultsData) {
-        addSummary(testResultsData, coverageResultsData, actionName);
+        addSummary(testResultsData, coverageResultsData);
     }
 }
 
@@ -137,7 +132,6 @@ export function getTestResults(
 export function addSummary(
     testResultsData: TestResultsData | null,
     coverageResultsData: CoverageData | null,
-    actionName: string,
 ) {
     try {
         // Add test results table if available
@@ -147,9 +141,7 @@ export function addSummary(
                 ` target="_blank" title="View documentation">ℹ️</a>`;
             const header = getTestHeader(testResultsData.Stats);
 
-            core.summary
-                .addHeading("MATLAB Test Results (" + actionName + ") " + helpLink)
-                .addRaw(header, true);
+            core.summary.addHeading("MATLAB Test Results " + helpLink).addRaw(header, true);
         }
         // Add coverage table if available
         if (coverageResultsData) {
