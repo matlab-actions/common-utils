@@ -9,7 +9,7 @@ classdef TestResultsSummaryPlugin < matlab.unittest.plugins.TestRunnerPlugin
             testDetails = struct([]);
             for idx = 1:numel(pluginData.TestResult)
                 testDetails(idx).TestResult.Duration = pluginData.TestResult(idx).Duration;
-                if ~isempty(pluginData.TestResult(idx).Details.DiagnosticRecord)
+                if isfield(pluginData.TestResult(idx).Details, "DiagnosticRecord") && ~isempty(pluginData.TestResult(idx).Details.DiagnosticRecord)
                     testDetails(idx).TestResult.Details.DiagnosticRecord.Event = pluginData.TestResult(idx).Details.DiagnosticRecord.Event;
                     testDetails(idx).TestResult.Details.DiagnosticRecord.Report = pluginData.TestResult(idx).Details.DiagnosticRecord.Report;
                 end
