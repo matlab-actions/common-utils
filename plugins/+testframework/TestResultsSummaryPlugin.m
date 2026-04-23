@@ -20,18 +20,11 @@ classdef TestResultsSummaryPlugin < matlab.unittest.plugins.TestRunnerPlugin
                 testDetails(idx).BaseFolder = pluginData.TestSuite(idx).BaseFolder;
             end
 
-            % If test results artifact exists, update the same file
-            testArtifactFile = fullfile(getenv("RUNNER_TEMP"), "matlabTestResults" + getenv("GITHUB_RUN_ID") + ".json");
-            if isfile(testArtifactFile)
-                testResults = {jsondecode(fileread(testArtifactFile))};
-            else
-                testResults = {};
-            end
-            testResults{end+1} = testDetails;
+            testResults = {testDetails};
 
             try
                 jsonTestResults = jsonencode(testResults, "PrettyPrint", true);
-
+                testArtifactFile = fullfile(getenv("RUNNER_TEMP"), "matlabTestResults_" + string(datetime('now', 'Format', 'yyyyMMdd_HHmmss_SSS')) + ".json");
                 [fID, msg] = fopen(testArtifactFile, "w");
                 if fID == -1
                     warning("testframework:TestResultsSummaryPlugin:UnableToOpenFile","Unable to open a file required to create the table of test results. (Cause: %s)", msg);
