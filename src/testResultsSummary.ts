@@ -211,7 +211,7 @@ export function addSummary(
                     .addRaw(getTestHeader(session.Stats), true);
 
                 // Add detailed results for this session
-                const detailedResults = getDetailedResults([session.TestResults]);
+                const detailedResults = getDetailedResults(session.TestResults);
                 core.summary.addRaw(detailedResults, true);
             }
         }
@@ -263,17 +263,14 @@ export function getTestHeader(stats: TestStatistics): string {
     );
 }
 
-export function getDetailedResults(testResults: MatlabTestFile[][]): string {
+export function getDetailedResults(testResults: MatlabTestFile[]): string {
     return (
         `<table>
             <tr>
                 <th>Test File</th>
                 <th>Duration(s)</th>
             </tr>` +
-        testResults
-            .flat()
-            .map((file) => generateTestFileRow(file))
-            .join("") +
+        testResults.map((file) => generateTestFileRow(file)).join("") +
         `</table>`
     );
 }

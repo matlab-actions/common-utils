@@ -1,6 +1,6 @@
 // Copyright 2025-2026 The MathWorks, Inc.
 
-import { jest, describe, it, expect, beforeAll } from "@jest/globals";
+import { jest, describe, it, expect, beforeAll, beforeEach } from "@jest/globals";
 import * as path from "path";
 import * as os from "os";
 import * as nodeFs from "fs";
@@ -11,12 +11,17 @@ import type {
     TestStatistics,
     TestSession,
 } from "./testResultsSummary.js";
+import { MatlabTestStatus } from "./testResultsSummary.js";
+
+// Create mock functions
+const mockAddHeading = jest.fn().mockReturnThis();
+const mockAddRaw = jest.fn().mockReturnThis();
 
 // Mock @actions/core
 jest.unstable_mockModule("@actions/core", () => ({
     summary: {
-        addHeading: jest.fn().mockReturnThis(),
-        addRaw: jest.fn().mockReturnThis(),
+        addHeading: mockAddHeading,
+        addRaw: mockAddRaw,
     },
 }));
 
@@ -35,7 +40,6 @@ jest.unstable_mockModule("fs", () => ({
 const core = await import("@actions/core");
 const fs = await import("fs");
 const testResultsSummary = await import("./testResultsSummary.js");
-const { MatlabTestStatus } = testResultsSummary;
 
 describe("Artifact Processing Tests", () => {
     // Shared test data
@@ -57,6 +61,12 @@ describe("Artifact Processing Tests", () => {
             testSessions = testResultsData.TestSessions;
             overallStats = testResultsData.OverallStats;
         }
+    });
+
+    beforeEach(() => {
+        // Clear mock calls before each test
+        mockAddHeading.mockClear();
+        mockAddRaw.mockClear();
     });
 
     function getOSInfo() {
@@ -103,18 +113,14 @@ describe("Artifact Processing Tests", () => {
         expect(testSessions.length).toBe(1);
         expect(testSessions[0].FileName).toBe("matlabTestResults_20250101_120000_000.json");
         expect(testSessions[0].TestResults.length).toBe(2);
-        expect(testSessions[0].TestResults[0].length).toBe(1);
-        expect(testSessions[0].TestResults[1].length).toBe(1);
     });
 
     it("should return correct test results data for valid JSON", () => {
         const testResults = testSessions[0].TestResults;
         expect(testResults).toBeDefined();
         expect(testResults.length).toBe(2);
-        expect(testResults[0].length).toBe(1);
-        expect(testResults[1].length).toBe(1);
-        expect(testResults[0][0].TestCases.length).toBe(9);
-        expect(testResults[1][0].TestCases.length).toBe(1);
+        expect(testResults[0].TestCases.length).toBe(9);
+        expect(testResults[1].TestCases.length).toBe(1);
     });
 
     it("should return correct overall stats for valid JSON", () => {
@@ -138,46 +144,42 @@ describe("Artifact Processing Tests", () => {
 
     it("should return correct test files data for valid JSON", () => {
         const testResults = testSessions[0].TestResults;
-        expect(testResults[0][0].Path).toBe(path.join("visualization", "tests", "TestExamples1"));
-        expect(testResults[1][0].Path).toBe(
+        expect(testResults[0].Path).toBe(path.join("visualization", "tests", "TestExamples1"));
+        expect(testResults[1].Path).toBe(
             path.join("visualization", "duplicate_tests", "TestExamples2"),
         );
-        expect(testResults[0][0].Name).toBe("TestExamples1");
-        expect(testResults[1][0].Name).toBe("TestExamples2");
-        expect(testResults[0][0].Duration).toBeCloseTo(1.73);
-        expect(testResults[1][0].Duration).toBeCloseTo(0.1);
-        expect(testResults[0][0].Status).toBe(MatlabTestStatus.FAILED);
-        expect(testResults[1][0].Status).toBe(MatlabTestStatus.INCOMPLETE);
+        expect(testResults[0].Name).toBe("TestExamples1");
+        expect(testResults[1].Name).toBe("TestExamples2");
+        expect(testResults[0].Duration).toBeCloseTo(1.73);
+        expect(testResults[1].Duration).toBeCloseTo(0.1);
+        expect(testResults[0].Status).toBe(MatlabTestStatus.FAILED);
+        expect(testResults[1].Status).toBe(MatlabTestStatus.INCOMPLETE);
     });
 
     it("should return correct test cases data for valid JSON", () => {
         const testResults = testSessions[0].TestResults;
-        expect(testResults[0][0].TestCases[0].Name).toBe("testNonLeapYear");
-        expect(testResults[0][0].TestCases[4].Name).toBe("testLeapYear");
-        expect(testResults[0][0].TestCases[7].Name).toBe("testValidDateFormat");
-        expect(testResults[0][0].TestCases[8].Name).toBe("testInvalidDateFormat");
-        expect(testResults[1][0].TestCases[0].Name).toBe("testNonLeapYear");
+        expect(testResults[0].TestCases[0].Name).toBe("testNonLeapYear");
+        expect(testResults[0].TestCases[4].Name).toBe("testLeapYear");
+        expect(testResults[0].TestCases[7].Name).toBe("testValidDateFormat");
+        expect(testResults[0].TestCases[8].Name).toBe("testInvalidDateFormat");
+        expect(testResults[1].TestCases[0].Name).toBe("testNonLeapYear");
 
-        expect(testResults[0][0].TestCases[0].Status).toBe(MatlabTestStatus.PASSED);
-        expect(testResults[0][0].TestCases[4].Status).toBe(MatlabTestStatus.FAILED);
-        expect(testResults[0][0].TestCases[8].Status).toBe(MatlabTestStatus.NOT_RUN);
-        expect(testResults[1][0].TestCases[0].Status).toBe(MatlabTestStatus.INCOMPLETE);
+        expect(testResults[0].TestCases[0].Status).toBe(MatlabTestStatus.PASSED);
+        expect(testResults[0].TestCases[4].Status).toBe(MatlabTestStatus.FAILED);
+        expect(testResults[0].TestCases[8].Status).toBe(MatlabTestStatus.NOT_RUN);
+        expect(testResults[1].TestCases[0].Status).toBe(MatlabTestStatus.INCOMPLETE);
 
-        expect(testResults[0][0].TestCases[0].Duration).toBeCloseTo(0.1);
-        expect(testResults[0][0].TestCases[1].Duration).toBeCloseTo(0.11);
-        expect(testResults[0][0].TestCases[2].Duration).toBeCloseTo(0.11);
-        expect(testResults[0][0].TestCases[4].Duration).toBeCloseTo(0.4);
-        expect(testResults[0][0].TestCases[8].Duration).toBeCloseTo(0.0);
-        expect(testResults[1][0].TestCases[0].Duration).toBeCloseTo(0.1);
+        expect(testResults[0].TestCases[0].Duration).toBeCloseTo(0.1);
+        expect(testResults[0].TestCases[1].Duration).toBeCloseTo(0.11);
+        expect(testResults[0].TestCases[2].Duration).toBeCloseTo(0.11);
+        expect(testResults[0].TestCases[4].Duration).toBeCloseTo(0.4);
+        expect(testResults[0].TestCases[8].Duration).toBeCloseTo(0.0);
+        expect(testResults[1].TestCases[0].Duration).toBeCloseTo(0.1);
 
-        expect(testResults[0][0].TestCases[4].Diagnostics[0].Event).toBe("SampleDiagnosticsEvent1");
-        expect(testResults[0][0].TestCases[4].Diagnostics[0].Report).toBe(
-            "SampleDiagnosticsReport1",
-        );
-        expect(testResults[1][0].TestCases[0].Diagnostics[0].Event).toBe("SampleDiagnosticsEvent2");
-        expect(testResults[1][0].TestCases[0].Diagnostics[0].Report).toBe(
-            "SampleDiagnosticsReport2",
-        );
+        expect(testResults[0].TestCases[4].Diagnostics[0].Event).toBe("SampleDiagnosticsEvent1");
+        expect(testResults[0].TestCases[4].Diagnostics[0].Report).toBe("SampleDiagnosticsReport1");
+        expect(testResults[1].TestCases[0].Diagnostics[0].Event).toBe("SampleDiagnosticsEvent2");
+        expect(testResults[1].TestCases[0].Diagnostics[0].Report).toBe("SampleDiagnosticsReport2");
     });
 
     it("should handle test results with undefined Details property", () => {
@@ -215,7 +217,7 @@ describe("Artifact Processing Tests", () => {
                 expect(session).toBeDefined();
                 if (session) {
                     expect(session.TestResults.length).toBeGreaterThan(0);
-                    const testFile = session.TestResults[0][0];
+                    const testFile = session.TestResults[0];
                     expect(testFile.TestCases.length).toBe(1);
                     expect(testFile.TestCases[0].Diagnostics).toEqual([]);
                 }
@@ -262,7 +264,7 @@ describe("Artifact Processing Tests", () => {
                 expect(session).toBeDefined();
                 if (session) {
                     expect(session.TestResults.length).toBeGreaterThan(0);
-                    const testFile = session.TestResults[0][0];
+                    const testFile = session.TestResults[0];
                     expect(testFile.TestCases.length).toBe(1);
                     expect(testFile.TestCases[0].Diagnostics).toEqual([]);
                 }
@@ -279,33 +281,30 @@ describe("Artifact Processing Tests", () => {
             testResultsSummary.addSummary(testResultsData, null);
 
             // Should have: 1 main heading + 1 session heading = 2 total
-            expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
+            expect(mockAddHeading).toHaveBeenCalledTimes(2);
 
             // First heading: overall results
-            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+            expect(mockAddHeading).toHaveBeenNthCalledWith(
                 1,
                 expect.stringContaining("MATLAB Test Results "),
             );
-            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+            expect(mockAddHeading).toHaveBeenNthCalledWith(
                 1,
                 expect.stringContaining(
                     '<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"',
                 ),
             );
-            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+            expect(mockAddHeading).toHaveBeenNthCalledWith(
                 1,
                 expect.stringContaining('target="_blank"'),
             );
-            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-                1,
-                expect.stringContaining("ℹ️</a>"),
-            );
+            expect(mockAddHeading).toHaveBeenNthCalledWith(1, expect.stringContaining("ℹ️</a>"));
 
             // Second heading: session (no session number for single session)
-            expect(core.summary.addHeading).toHaveBeenNthCalledWith(2, "Test Session", 3);
+            expect(mockAddHeading).toHaveBeenNthCalledWith(2, "Test Session", 3);
 
             // Should have: 1 overall header + 1 session header + 1 detailed results = 3 total
-            expect(core.summary.addRaw).toHaveBeenCalledTimes(3);
+            expect(mockAddRaw).toHaveBeenCalledTimes(3);
         }
     });
 
@@ -331,24 +330,12 @@ describe("Artifact Processing Tests", () => {
                 },
             };
 
-            // Clear previous mock calls
-            (core.summary.addHeading as jest.Mock).mockClear();
-            (core.summary.addRaw as jest.Mock).mockClear();
-
             testResultsSummary.addSummary(multiSessionData, null);
 
             // Should have: 1 main heading + 2 session headings = 3 total
-            expect(core.summary.addHeading).toHaveBeenCalledTimes(3);
-            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-                2,
-                "Test Session (Session 1)",
-                3,
-            );
-            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-                3,
-                "Test Session (Session 2)",
-                3,
-            );
+            expect(mockAddHeading).toHaveBeenCalledTimes(3);
+            expect(mockAddHeading).toHaveBeenNthCalledWith(2, "Test Session (Session 1)", 3);
+            expect(mockAddHeading).toHaveBeenNthCalledWith(3, "Test Session (Session 2)", 3);
         }
     });
 });
@@ -359,9 +346,12 @@ describe("HTML Structure Tests", () => {
         [MatlabTestStatus.FAILED, "❌"],
         [MatlabTestStatus.INCOMPLETE, "⚠️"],
         [MatlabTestStatus.NOT_RUN, "🚫"],
-    ])("should return %s emoji for %s Status", (Status, expectedEmoji) => {
-        expect(testResultsSummary.getStatusEmoji(Status)).toBe(expectedEmoji);
-    });
+    ])(
+        "should return %s emoji for %s Status",
+        (status: MatlabTestStatus, expectedEmoji: string) => {
+            expect(testResultsSummary.getStatusEmoji(status)).toBe(expectedEmoji);
+        },
+    );
 
     it("should generate valid HTML table structure for header", () => {
         const mockStats: TestStatistics = {
@@ -408,42 +398,40 @@ describe("HTML Structure Tests", () => {
     });
 
     it("should generate valid HTML for detailed results with proper details tags for both passed and failed tests", () => {
-        const mockTestResults: MatlabTestFile[][] = [
-            [
-                {
-                    Name: "TestExamples1",
-                    Path: "tests/TestExamples1",
-                    Duration: 1.5,
-                    Status: MatlabTestStatus.FAILED,
-                    TestCases: [
-                        {
-                            Name: "testFailedCase",
-                            Duration: 0.5,
-                            Status: MatlabTestStatus.FAILED,
-                            Diagnostics: [
-                                {
-                                    Event: "TestFailure",
-                                    Report: "Expected 5 but got 4",
-                                },
-                            ],
-                        },
-                    ],
-                },
-                {
-                    Name: "TestExamples2",
-                    Path: "tests/TestExamples2",
-                    Duration: 0.3,
-                    Status: MatlabTestStatus.PASSED,
-                    TestCases: [
-                        {
-                            Name: "testPassedCase",
-                            Duration: 0.3,
-                            Status: MatlabTestStatus.PASSED,
-                            Diagnostics: [],
-                        },
-                    ],
-                },
-            ],
+        const mockTestResults: MatlabTestFile[] = [
+            {
+                Name: "TestExamples1",
+                Path: "tests/TestExamples1",
+                Duration: 1.5,
+                Status: MatlabTestStatus.FAILED,
+                TestCases: [
+                    {
+                        Name: "testFailedCase",
+                        Duration: 0.5,
+                        Status: MatlabTestStatus.FAILED,
+                        Diagnostics: [
+                            {
+                                Event: "TestFailure",
+                                Report: "Expected 5 but got 4",
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                Name: "TestExamples2",
+                Path: "tests/TestExamples2",
+                Duration: 0.3,
+                Status: MatlabTestStatus.PASSED,
+                TestCases: [
+                    {
+                        Name: "testPassedCase",
+                        Duration: 0.3,
+                        Status: MatlabTestStatus.PASSED,
+                        Diagnostics: [],
+                    },
+                ],
+            },
         ];
 
         const htmlDetails = testResultsSummary.getDetailedResults(mockTestResults);
@@ -505,11 +493,16 @@ describe("HTML Structure Tests", () => {
 });
 
 describe("Error Handling Tests", () => {
+    beforeEach(() => {
+        mockAddHeading.mockClear();
+        mockAddRaw.mockClear();
+    });
+
     it("should handle errors gracefully in addSummary", () => {
         const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-        // Mock addHeading to throw an error
-        (core.summary.addHeading as jest.Mock).mockImplementationOnce(() => {
+        // Mock addHeading to throw an error for this specific test
+        mockAddHeading.mockImplementationOnce(() => {
             throw new Error("Mock error in addHeading");
         });
 
@@ -526,7 +519,7 @@ describe("Error Handling Tests", () => {
             TestSessions: [
                 {
                     FileName: "test.json",
-                    TestResults: [mockTestResults],
+                    TestResults: mockTestResults,
                     Stats: mockStats,
                 },
             ],
@@ -545,6 +538,9 @@ describe("Error Handling Tests", () => {
         );
 
         consoleSpy.mockRestore();
+
+        // Restore the mock to its default behavior
+        mockAddHeading.mockReturnThis();
     });
 
     it("should handle JSON parsing errors gracefully", () => {
@@ -657,8 +653,10 @@ describe("Error Handling Tests", () => {
         const result = testResultsSummary.getTestResults(nonExistentDir, "123", "");
 
         expect(result).toBeNull();
+
+        // The error message includes a colon after the directory path
         expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining(`An error occurred while reading directory ${nonExistentDir}`),
+            `An error occurred while reading directory ${nonExistentDir}:`,
             expect.any(Error),
         );
 
