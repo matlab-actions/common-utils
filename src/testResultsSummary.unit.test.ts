@@ -5,7 +5,12 @@ import * as path from "path";
 import * as os from "os";
 import * as nodeFs from "fs";
 import { JSDOM } from "jsdom";
-import type { TestResultsData, MatlabTestFile, TestStatistics, TestSession } from "./testResultsSummary.js";
+import type {
+    TestResultsData,
+    MatlabTestFile,
+    TestStatistics,
+    TestSession,
+} from "./testResultsSummary.js";
 
 // Mock @actions/core
 jest.unstable_mockModule("@actions/core", () => ({
@@ -79,7 +84,10 @@ describe("Artifact Processing Tests", () => {
             osName,
             "matlabTestResults.json",
         );
-        const destinationFilePath = path.join(runnerTemp, "matlabTestResults_20250101_120000_000.json");
+        const destinationFilePath = path.join(
+            runnerTemp,
+            "matlabTestResults_20250101_120000_000.json",
+        );
 
         try {
             fs.copyFileSync(sourceFilePath, destinationFilePath);
@@ -177,19 +185,21 @@ describe("Artifact Processing Tests", () => {
         const testFilePath = path.join(runnerTemp, "matlabTestResults_undefined_details.json");
 
         // Create test data with undefined Details
-        const testData = [[
-            {
-                BaseFolder: "/workspace/tests",
-                TestResult: {
-                    Name: "TestFile/testCase1",
-                    Duration: 0.5,
-                    Failed: false,
-                    Incomplete: false,
-                    Passed: true,
-                    // Details property is intentionally omitted
-                }
-            }
-        ]];
+        const testData = [
+            [
+                {
+                    BaseFolder: "/workspace/tests",
+                    TestResult: {
+                        Name: "TestFile/testCase1",
+                        Duration: 0.5,
+                        Failed: false,
+                        Incomplete: false,
+                        Passed: true,
+                        // Details property is intentionally omitted
+                    },
+                },
+            ],
+        ];
 
         try {
             fs.writeFileSync(testFilePath, JSON.stringify(testData));
@@ -199,7 +209,9 @@ describe("Artifact Processing Tests", () => {
             expect(result).not.toBeNull();
             if (result) {
                 expect(result.TestSessions.length).toBeGreaterThan(0);
-                const session = result.TestSessions.find(s => s.FileName === "matlabTestResults_undefined_details.json");
+                const session = result.TestSessions.find(
+                    (s) => s.FileName === "matlabTestResults_undefined_details.json",
+                );
                 expect(session).toBeDefined();
                 if (session) {
                     expect(session.TestResults.length).toBeGreaterThan(0);
@@ -220,19 +232,21 @@ describe("Artifact Processing Tests", () => {
         const testFilePath = path.join(runnerTemp, "matlabTestResults_no_diagnostics.json");
 
         // Create test data with Details but no DiagnosticRecord
-        const testData = [[
-            {
-                BaseFolder: "/workspace/tests",
-                TestResult: {
-                    Name: "TestFile/testCase1",
-                    Duration: 0.5,
-                    Failed: false,
-                    Incomplete: false,
-                    Passed: true,
-                    Details: {}
-                }
-            }
-        ]];
+        const testData = [
+            [
+                {
+                    BaseFolder: "/workspace/tests",
+                    TestResult: {
+                        Name: "TestFile/testCase1",
+                        Duration: 0.5,
+                        Failed: false,
+                        Incomplete: false,
+                        Passed: true,
+                        Details: {},
+                    },
+                },
+            ],
+        ];
 
         try {
             fs.writeFileSync(testFilePath, JSON.stringify(testData));
@@ -242,7 +256,9 @@ describe("Artifact Processing Tests", () => {
             expect(result).not.toBeNull();
             if (result) {
                 expect(result.TestSessions.length).toBeGreaterThan(0);
-                const session = result.TestSessions.find(s => s.FileName === "matlabTestResults_no_diagnostics.json");
+                const session = result.TestSessions.find(
+                    (s) => s.FileName === "matlabTestResults_no_diagnostics.json",
+                );
                 expect(session).toBeDefined();
                 if (session) {
                     expect(session.TestResults.length).toBeGreaterThan(0);
@@ -264,7 +280,7 @@ describe("Artifact Processing Tests", () => {
 
             // Should have: 1 main heading + 1 session heading = 2 total
             expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
-            
+
             // First heading: overall results
             expect(core.summary.addHeading).toHaveBeenNthCalledWith(
                 1,
@@ -284,7 +300,7 @@ describe("Artifact Processing Tests", () => {
                 1,
                 expect.stringContaining("ℹ️</a>"),
             );
-            
+
             // Second heading: session (no session number for single session)
             expect(core.summary.addHeading).toHaveBeenNthCalledWith(2, "Test Session", 3);
 
@@ -323,8 +339,16 @@ describe("Artifact Processing Tests", () => {
 
             // Should have: 1 main heading + 2 session headings = 3 total
             expect(core.summary.addHeading).toHaveBeenCalledTimes(3);
-            expect(core.summary.addHeading).toHaveBeenNthCalledWith(2, "Test Session (Session 1)", 3);
-            expect(core.summary.addHeading).toHaveBeenNthCalledWith(3, "Test Session (Session 2)", 3);
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                2,
+                "Test Session (Session 1)",
+                3,
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                3,
+                "Test Session (Session 2)",
+                3,
+            );
         }
     });
 });
@@ -499,11 +523,13 @@ describe("Error Handling Tests", () => {
         };
         const mockTestResults: MatlabTestFile[] = [];
         const mockTestResultsData: TestResultsData = {
-            TestSessions: [{
-                FileName: "test.json",
-                TestResults: [mockTestResults],
-                Stats: mockStats,
-            }],
+            TestSessions: [
+                {
+                    FileName: "test.json",
+                    TestResults: [mockTestResults],
+                    Stats: mockStats,
+                },
+            ],
             OverallStats: mockStats,
         };
 
@@ -530,7 +556,10 @@ describe("Error Handling Tests", () => {
         process.env.GITHUB_ACTION = "run-tests";
 
         // Create a file with invalid JSON
-        const invalidJsonPath = path.join(process.env.RUNNER_TEMP, "matlabTestResults_invalid.json");
+        const invalidJsonPath = path.join(
+            process.env.RUNNER_TEMP,
+            "matlabTestResults_invalid.json",
+        );
         fs.writeFileSync(invalidJsonPath, "{ invalid json content");
 
         try {
@@ -539,7 +568,7 @@ describe("Error Handling Tests", () => {
                 process.env.GITHUB_RUN_ID,
                 "",
             );
-            
+
             // Should return data but skip the invalid file
             if (result) {
                 // The invalid file should be skipped, so we might have 0 sessions
@@ -576,7 +605,10 @@ describe("Error Handling Tests", () => {
         process.env.GITHUB_ACTION = "run-tests";
 
         // Create a valid JSON file
-        const validJsonPath = path.join(process.env.RUNNER_TEMP, "matlabTestResults_delete_test.json");
+        const validJsonPath = path.join(
+            process.env.RUNNER_TEMP,
+            "matlabTestResults_delete_test.json",
+        );
         fs.writeFileSync(validJsonPath, "[[]]"); // Empty array - valid JSON
 
         try {
@@ -622,11 +654,7 @@ describe("Error Handling Tests", () => {
         // Use a non-existent directory
         const nonExistentDir = path.join(import.meta.dirname, "non_existent_directory_12345");
 
-        const result = testResultsSummary.getTestResults(
-            nonExistentDir,
-            "123",
-            "",
-        );
+        const result = testResultsSummary.getTestResults(nonExistentDir, "123", "");
 
         expect(result).toBeNull();
         expect(consoleSpy).toHaveBeenCalledWith(
