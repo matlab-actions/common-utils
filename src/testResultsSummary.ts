@@ -337,7 +337,7 @@ function processTestCase(
         Name: testCaseName,
         Duration: Number(testResult.Duration.toFixed(2)),
         Status: determineTestStatus(testResult),
-        Diagnostics: processDiagnostics(testResult.Details.DiagnosticRecord),
+        Diagnostics: processDiagnostics(testResult.Details?.DiagnosticRecord),
     };
 
     testFile.TestCases.push(testCase);
