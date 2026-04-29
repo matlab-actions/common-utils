@@ -12,7 +12,7 @@
         "build": "tsc",
         "prepare": "npm run build",
         "package": "ncc build --minify",
-        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+        "test": "NODE_OPTIONS='--experimental-vm-modules' jest",
         "all": "npm run format-check && npm test && npm run build && npm run package",
         "ci": "npm run clean && npm ci --ignore-scripts && npm run all"
     },

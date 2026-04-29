@@ -91,7 +91,10 @@ export function getTestResults(
             (file) => file.startsWith(filePrefix) && file.endsWith(fileSuffix),
         );
     } catch (e) {
-        console.error(`An error occurred while finding test results summary file(s) in directory ${runnerTemp}:`, e);
+        console.error(
+            `An error occurred while finding test results summary file(s) in directory ${runnerTemp}:`,
+            e,
+        );
         return null;
     }
 
@@ -212,9 +215,7 @@ export function addSummary(
 
                 // Add detailed results for this session
                 const detailedResults = getDetailedResults(session.TestResults);
-                core.summary
-                    .addHeading("All tests", 4)
-                    .addRaw(detailedResults, true);
+                core.summary.addHeading("All tests", 4).addRaw(detailedResults, true);
             }
         }
     } catch (e) {

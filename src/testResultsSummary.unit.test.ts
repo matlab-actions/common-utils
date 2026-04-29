@@ -64,9 +64,8 @@ describe("Artifact Processing Tests", () => {
     });
 
     beforeEach(() => {
-        // Clear mock calls before each test
-        mockAddHeading.mockClear();
-        mockAddRaw.mockClear();
+        mockAddHeading.mockClear().mockReturnThis();
+        mockAddRaw.mockClear().mockReturnThis();
     });
 
     function getOSInfo() {
@@ -490,8 +489,8 @@ describe("HTML Structure Tests", () => {
 
 describe("Error Handling Tests", () => {
     beforeEach(() => {
-        mockAddHeading.mockClear();
-        mockAddRaw.mockClear();
+        mockAddHeading.mockClear().mockReturnThis();
+        mockAddRaw.mockClear().mockReturnThis();
     });
 
     it("should handle errors gracefully in addSummary", () => {
