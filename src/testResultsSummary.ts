@@ -91,7 +91,7 @@ export function getTestResults(
             (file) => file.startsWith(filePrefix) && file.endsWith(fileSuffix),
         );
     } catch (e) {
-        console.error(`An error occurred while reading directory ${runnerTemp}:`, e);
+        console.error(`An error occurred while finding test results summary file(s) in directory ${runnerTemp}:`, e);
         return null;
     }
 
@@ -202,17 +202,19 @@ export function addSummary(
         if (testResultsData) {
             for (let i = 0; i < testResultsData.TestSessions.length; i++) {
                 const session = testResultsData.TestSessions[i];
-                const sessionNumber =
-                    testResultsData.TestSessions.length > 1 ? ` (Session ${i + 1})` : "";
 
-                // Add session header with stats
-                core.summary
-                    .addHeading(`Test Session${sessionNumber}`, 3)
-                    .addRaw(getTestHeader(session.Stats), true);
+                if (testResultsData.TestSessions.length > 1) {
+                    // Add session header with stats
+                    core.summary
+                        .addHeading(`Test Session (Session ${i + 1})`, 3)
+                        .addRaw(getTestHeader(session.Stats), true);
+                }
 
                 // Add detailed results for this session
                 const detailedResults = getDetailedResults(session.TestResults);
-                core.summary.addRaw(detailedResults, true);
+                core.summary
+                    .addHeading("All tests", 4)
+                    .addRaw(detailedResults, true);
             }
         }
     } catch (e) {
