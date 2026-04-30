@@ -1,6 +1,6 @@
 // Copyright 2025-26 The MathWorks, Inc.
 
-import { readFileSync, unlinkSync, existsSync } from "fs";
+import { readFileSync, unlinkSync, existsSync, readdirSync } from "fs";
 import * as path from "path";
 import * as core from "@actions/core";
 import { getCoverageResults, getCoverageTable, CoverageData } from "./codeCoverageSummary.js";
@@ -57,9 +57,15 @@ export interface TestStatistics {
     Duration: number;
 }
 
-export interface TestResultsData {
-    TestResults: MatlabTestFile[][];
+export interface TestSession {
+    FileName: string;
+    TestResults: MatlabTestFile[];
     Stats: TestStatistics;
+}
+
+export interface TestResultsData {
+    TestSessions: TestSession[];
+    OverallStats: TestStatistics;
 }
 
 export function processAndAddTestSummary(runnerTemp: string, runId: string, workspace: string) {
@@ -69,20 +75,56 @@ export function processAndAddTestSummary(runnerTemp: string, runId: string, work
         addSummary(testResultsData, coverageResultsData);
     }
 }
-
 export function getTestResults(
     runnerTemp: string,
     runId: string,
     workspace: string,
 ): TestResultsData | null {
     let testResultsData = null;
-    const resultsPath = path.join(runnerTemp, `matlabTestResults${runId}.json`);
+    const filePrefix = `matlabTestResults_`;
+    const fileSuffix = `.json`;
 
-    if (existsSync(resultsPath)) {
+    // Find all test result files matching the pattern
+    let testResultFiles: string[] = [];
+    try {
+        testResultFiles = readdirSync(runnerTemp).filter(
+            (file) => file.startsWith(filePrefix) && file.endsWith(fileSuffix),
+        );
+    } catch (e) {
+        console.error(
+            `An error occurred while finding test results summary file(s) in directory ${runnerTemp}:`,
+            e,
+        );
+        return null;
+    }
+
+    if (testResultFiles.length === 0) {
+        return null;
+    }
+
+    const testSessions: TestSession[] = [];
+    const overallStats: TestStatistics = {
+        Total: 0,
+        Passed: 0,
+        Failed: 0,
+        Incomplete: 0,
+        NotRun: 0,
+        Duration: 0,
+    };
+
+    testResultsData = {
+        TestSessions: testSessions,
+        OverallStats: overallStats,
+    };
+
+    // Process each test result file
+    for (const fileName of testResultFiles) {
+        const resultsPath = path.join(runnerTemp, fileName);
+
         try {
             const testArtifact = JSON.parse(readFileSync(resultsPath, "utf8"));
-            const testResults: MatlabTestFile[][] = [];
-            const stats: TestStatistics = {
+            const sessionResults: MatlabTestFile[] = [];
+            const sessionStats: TestStatistics = {
                 Total: 0,
                 Passed: 0,
                 Failed: 0,
@@ -90,13 +132,8 @@ export function getTestResults(
                 NotRun: 0,
                 Duration: 0,
             };
-            testResultsData = {
-                TestResults: testResults,
-                Stats: stats,
-            };
 
             for (const jsonTestSessionResults of testArtifact) {
-                const testSessionResults: MatlabTestFile[] = [];
                 const map = new Map<string, MatlabTestFile>();
 
                 const testCases = Array.isArray(jsonTestSessionResults)
@@ -104,11 +141,24 @@ export function getTestResults(
                     : [jsonTestSessionResults];
 
                 for (const jsonTestCase of testCases) {
-                    processTestCase(testSessionResults, jsonTestCase, map, stats, workspace);
+                    processTestCase(sessionResults, jsonTestCase, map, sessionStats, workspace);
                 }
-
-                testResults.push(testSessionResults);
             }
+
+            // Add this session to the list
+            testSessions.push({
+                FileName: fileName,
+                TestResults: sessionResults,
+                Stats: sessionStats,
+            });
+
+            // Update overall stats
+            overallStats.Total += sessionStats.Total;
+            overallStats.Passed += sessionStats.Passed;
+            overallStats.Failed += sessionStats.Failed;
+            overallStats.Incomplete += sessionStats.Incomplete;
+            overallStats.NotRun += sessionStats.NotRun;
+            overallStats.Duration += sessionStats.Duration;
         } catch (e) {
             console.error(
                 `An error occurred while reading the test results summary file ${resultsPath}:`,
@@ -128,7 +178,6 @@ export function getTestResults(
 
     return testResultsData;
 }
-
 export function addSummary(
     testResultsData: TestResultsData | null,
     coverageResultsData: CoverageData | null,
@@ -139,10 +188,12 @@ export function addSummary(
             const helpLink =
                 `<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"` +
                 ` target="_blank" title="View documentation">ℹ️</a>`;
-            const header = getTestHeader(testResultsData.Stats);
 
-            core.summary.addHeading("MATLAB Test Results " + helpLink).addRaw(header, true);
+            // Add overall header
+            const overallHeader = getTestHeader(testResultsData.OverallStats);
+            core.summary.addHeading("MATLAB Test Results " + helpLink).addRaw(overallHeader, true);
         }
+
         // Add coverage table if available
         if (coverageResultsData) {
             core.summary
@@ -150,10 +201,22 @@ export function addSummary(
                 .addRaw(getCoverageTable(coverageResultsData), true);
         }
 
-        // Add detailed test results
+        // Add detailed test results for each session
         if (testResultsData) {
-            const detailedResults = getDetailedResults(testResultsData.TestResults);
-            core.summary.addHeading("All tests", 3).addRaw(detailedResults, true);
+            for (let i = 0; i < testResultsData.TestSessions.length; i++) {
+                const session = testResultsData.TestSessions[i];
+
+                if (testResultsData.TestSessions.length > 1) {
+                    // Add session header with stats
+                    core.summary
+                        .addHeading(`Test Session (Session ${i + 1})`, 3)
+                        .addRaw(getTestHeader(session.Stats), true);
+                }
+
+                // Add detailed results for this session
+                const detailedResults = getDetailedResults(session.TestResults);
+                core.summary.addHeading("All tests", 4).addRaw(detailedResults, true);
+            }
         }
     } catch (e) {
         console.error("An error occurred while adding the test results to the summary:", e);
@@ -203,17 +266,14 @@ export function getTestHeader(stats: TestStatistics): string {
     );
 }
 
-export function getDetailedResults(testResults: MatlabTestFile[][]): string {
+export function getDetailedResults(testResults: MatlabTestFile[]): string {
     return (
         `<table>
             <tr>
                 <th>Test File</th>
                 <th>Duration(s)</th>
             </tr>` +
-        testResults
-            .flat()
-            .map((file) => generateTestFileRow(file))
-            .join("") +
+        testResults.map((file) => generateTestFileRow(file)).join("") +
         `</table>`
     );
 }
