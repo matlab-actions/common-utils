@@ -13,7 +13,7 @@ classdef TestResultsSummaryPlugin < matlab.unittest.plugins.TestRunnerPlugin
                     testDetails(idx).TestResult.Details.DiagnosticRecord.Event = pluginData.TestResult(idx).Details.DiagnosticRecord.Event;
                     testDetails(idx).TestResult.Details.DiagnosticRecord.Report = pluginData.TestResult(idx).Details.DiagnosticRecord.Report;
                 else
-      18 +          testDetails(idx).TestResult.Details = struct();
+                    testDetails(idx).TestResult.Details = struct();
                 end
                 testDetails(idx).TestResult.Name = pluginData.TestResult(idx).Name;
                 testDetails(idx).TestResult.Passed = pluginData.TestResult(idx).Passed;
@@ -22,10 +22,8 @@ classdef TestResultsSummaryPlugin < matlab.unittest.plugins.TestRunnerPlugin
                 testDetails(idx).BaseFolder = pluginData.TestSuite(idx).BaseFolder;
             end
 
-            testResults = {testDetails};
-
             try
-                jsonTestResults = jsonencode(testResults, "PrettyPrint", true);
+                jsonTestResults = jsonencode(testDetails, "PrettyPrint", true);
                 testArtifactFile = fullfile(getenv("RUNNER_TEMP"), "matlabTestResults_" + string(datetime('now', 'Format', 'yyyyMMdd_HHmmss_SSS')) + ".json");
                 [fID, msg] = fopen(testArtifactFile, "w");
                 if fID == -1

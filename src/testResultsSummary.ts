@@ -75,6 +75,7 @@ export function processAndAddTestSummary(runnerTemp: string, runId: string, work
         addSummary(testResultsData, coverageResultsData);
     }
 }
+
 export function getTestResults(
     runnerTemp: string,
     runId: string,
@@ -133,16 +134,12 @@ export function getTestResults(
                 Duration: 0,
             };
 
-            for (const jsonTestSessionResults of testArtifact) {
-                const map = new Map<string, MatlabTestFile>();
+            const map = new Map<string, MatlabTestFile>();
 
-                const testCases = Array.isArray(jsonTestSessionResults)
-                    ? jsonTestSessionResults
-                    : [jsonTestSessionResults];
+            const testCases = Array.isArray(testArtifact) ? testArtifact : [testArtifact];
 
-                for (const jsonTestCase of testCases) {
-                    processTestCase(sessionResults, jsonTestCase, map, sessionStats, workspace);
-                }
+            for (const jsonTestCase of testCases) {
+                processTestCase(sessionResults, jsonTestCase, map, sessionStats, workspace);
             }
 
             // Add this session to the list
@@ -205,6 +202,8 @@ export function addSummary(
         if (testResultsData) {
             for (let i = 0; i < testResultsData.TestSessions.length; i++) {
                 const session = testResultsData.TestSessions[i];
+
+                if (session.TestResults.length === 0) continue;
 
                 if (testResultsData.TestSessions.length > 1) {
                     // Add session header with stats

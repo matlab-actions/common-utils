@@ -7,21 +7,16 @@ import * as nodeFs from "fs";
 import { JSDOM } from "jsdom";
 import type {
     TestResultsData,
+    TestSession,
     MatlabTestFile,
     TestStatistics,
-    TestSession,
 } from "./testResultsSummary.js";
-import { MatlabTestStatus } from "./testResultsSummary.js";
-
-// Create mock functions
-const mockAddHeading = jest.fn().mockReturnThis();
-const mockAddRaw = jest.fn().mockReturnThis();
 
 // Mock @actions/core
 jest.unstable_mockModule("@actions/core", () => ({
     summary: {
-        addHeading: mockAddHeading,
-        addRaw: mockAddRaw,
+        addHeading: jest.fn().mockReturnThis(),
+        addRaw: jest.fn().mockReturnThis(),
     },
 }));
 
@@ -40,32 +35,29 @@ jest.unstable_mockModule("fs", () => ({
 const core = await import("@actions/core");
 const fs = await import("fs");
 const testResultsSummary = await import("./testResultsSummary.js");
+const { MatlabTestStatus } = testResultsSummary;
 
 describe("Artifact Processing Tests", () => {
     // Shared test data
     let testResultsData: TestResultsData | null;
-    let testSessions: TestSession[];
-    let overallStats: TestStatistics;
+    let testSession: TestSession;
+    let testResults: MatlabTestFile[];
+    let stats: TestStatistics;
 
     beforeAll(() => {
         const runnerTemp = path.join(import.meta.dirname, "..");
         const runId = "123";
-        const actionName = "run-tests";
         const osInfo = getOSInfo();
         const workspace = path.join(osInfo.workspaceParent, "workspace");
 
-        copyTestDataFile(osInfo.osName, runnerTemp, runId, actionName);
+        copyTestDataFile(osInfo.osName, runnerTemp);
 
         testResultsData = testResultsSummary.getTestResults(runnerTemp, runId, workspace);
         if (testResultsData) {
-            testSessions = testResultsData.TestSessions;
-            overallStats = testResultsData.OverallStats;
+            testSession = testResultsData.TestSessions[0];
+            testResults = testSession.TestResults;
+            stats = testResultsData.OverallStats;
         }
-    });
-
-    beforeEach(() => {
-        mockAddHeading.mockClear().mockReturnThis();
-        mockAddRaw.mockClear().mockReturnThis();
     });
 
     function getOSInfo() {
@@ -79,12 +71,7 @@ describe("Artifact Processing Tests", () => {
         throw new Error(`Unsupported OS: ${platform}`);
     }
 
-    function copyTestDataFile(
-        osName: string,
-        runnerTemp: string,
-        runId: string,
-        actionName: string,
-    ) {
+    function copyTestDataFile(osName: string, runnerTemp: string) {
         const sourceFilePath = path.join(
             import.meta.dirname,
             "test-data",
@@ -93,10 +80,7 @@ describe("Artifact Processing Tests", () => {
             osName,
             "matlabTestResults.json",
         );
-        const destinationFilePath = path.join(
-            runnerTemp,
-            "matlabTestResults_20250101_120000_000.json",
-        );
+        const destinationFilePath = path.join(runnerTemp, "matlabTestResults_session1.json");
 
         try {
             fs.copyFileSync(sourceFilePath, destinationFilePath);
@@ -105,233 +89,248 @@ describe("Artifact Processing Tests", () => {
         }
     }
 
-    // it("should return correct test results data structure", () => {
-    //     expect(testResultsData).toBeDefined();
-    //     expect(testSessions).toBeDefined();
-    //     expect(overallStats).toBeDefined();
-    //     expect(testSessions.length).toBe(1);
-    //     expect(testSessions[0].FileName).toBe("matlabTestResults_20250101_120000_000.json");
-    //     expect(testSessions[0].TestResults.length).toBe(2);
-    // });
+    it("should return correct test results data for valid JSON", () => {
+        expect(testResultsData).toBeDefined();
+        expect(testResultsData!.TestSessions.length).toBe(1);
+        expect(testResults).toBeDefined();
+        expect(stats).toBeDefined();
+        expect(testResults.length).toBe(2);
+        expect(testResults[0].TestCases.length).toBe(9);
+        expect(testResults[1].TestCases.length).toBe(1);
+    });
 
-    // it("should return correct test results data for valid JSON", () => {
-    //     const testResults = testSessions[0].TestResults;
-    //     expect(testResults).toBeDefined();
-    //     expect(testResults.length).toBe(2);
-    //     expect(testResults[0].TestCases.length).toBe(9);
-    //     expect(testResults[1].TestCases.length).toBe(1);
-    // });
+    it("should return correct overall stats for valid JSON", () => {
+        expect(stats.Total).toBe(10);
+        expect(stats.Passed).toBe(4);
+        expect(stats.Failed).toBe(3);
+        expect(stats.Incomplete).toBe(2);
+        expect(stats.NotRun).toBe(1);
+        expect(stats.Duration).toBeCloseTo(1.83);
+    });
 
-    // it("should return correct overall stats for valid JSON", () => {
-    //     expect(overallStats.Total).toBe(10);
-    //     expect(overallStats.Passed).toBe(4);
-    //     expect(overallStats.Failed).toBe(3);
-    //     expect(overallStats.Incomplete).toBe(2);
-    //     expect(overallStats.NotRun).toBe(1);
-    //     expect(overallStats.Duration).toBeCloseTo(1.83);
-    // });
+    it("should return correct session stats for valid JSON", () => {
+        const sessionStats = testSession.Stats;
+        expect(sessionStats.Total).toBe(10);
+        expect(sessionStats.Passed).toBe(4);
+        expect(sessionStats.Failed).toBe(3);
+        expect(sessionStats.Incomplete).toBe(2);
+        expect(sessionStats.NotRun).toBe(1);
+        expect(sessionStats.Duration).toBeCloseTo(1.83);
+    });
 
-    // it("should return correct session stats for valid JSON", () => {
-    //     const sessionStats = testSessions[0].Stats;
-    //     expect(sessionStats.Total).toBe(10);
-    //     expect(sessionStats.Passed).toBe(4);
-    //     expect(sessionStats.Failed).toBe(3);
-    //     expect(sessionStats.Incomplete).toBe(2);
-    //     expect(sessionStats.NotRun).toBe(1);
-    //     expect(sessionStats.Duration).toBeCloseTo(1.83);
-    // });
+    it("should return correct test files data for valid JSON", () => {
+        expect(testResults[0].Path).toBe(path.join("visualization", "tests", "TestExamples1"));
+        expect(testResults[1].Path).toBe(
+            path.join("visualization", "duplicate_tests", "TestExamples2"),
+        );
+        expect(testResults[0].Name).toBe("TestExamples1");
+        expect(testResults[1].Name).toBe("TestExamples2");
+        expect(testResults[0].Duration).toBeCloseTo(1.73);
+        expect(testResults[1].Duration).toBeCloseTo(0.1);
+        expect(testResults[0].Status).toBe(MatlabTestStatus.FAILED);
+        expect(testResults[1].Status).toBe(MatlabTestStatus.INCOMPLETE);
+    });
 
-    // it("should return correct test files data for valid JSON", () => {
-    //     const testResults = testSessions[0].TestResults;
-    //     expect(testResults[0].Path).toBe(path.join("visualization", "tests", "TestExamples1"));
-    //     expect(testResults[1].Path).toBe(
-    //         path.join("visualization", "duplicate_tests", "TestExamples2"),
-    //     );
-    //     expect(testResults[0].Name).toBe("TestExamples1");
-    //     expect(testResults[1].Name).toBe("TestExamples2");
-    //     expect(testResults[0].Duration).toBeCloseTo(1.73);
-    //     expect(testResults[1].Duration).toBeCloseTo(0.1);
-    //     expect(testResults[0].Status).toBe(MatlabTestStatus.FAILED);
-    //     expect(testResults[1].Status).toBe(MatlabTestStatus.INCOMPLETE);
-    // });
+    it("should return correct test cases data for valid JSON", () => {
+        expect(testResults[0].TestCases[0].Name).toBe("testNonLeapYear");
+        expect(testResults[0].TestCases[4].Name).toBe("testLeapYear");
+        expect(testResults[0].TestCases[7].Name).toBe("testValidDateFormat");
+        expect(testResults[0].TestCases[8].Name).toBe("testInvalidDateFormat");
+        expect(testResults[1].TestCases[0].Name).toBe("testNonLeapYear");
 
-    // it("should return correct test cases data for valid JSON", () => {
-    //     const testResults = testSessions[0].TestResults;
-    //     expect(testResults[0].TestCases[0].Name).toBe("testNonLeapYear");
-    //     expect(testResults[0].TestCases[4].Name).toBe("testLeapYear");
-    //     expect(testResults[0].TestCases[7].Name).toBe("testValidDateFormat");
-    //     expect(testResults[0].TestCases[8].Name).toBe("testInvalidDateFormat");
-    //     expect(testResults[1].TestCases[0].Name).toBe("testNonLeapYear");
+        expect(testResults[0].TestCases[0].Status).toBe(MatlabTestStatus.PASSED);
+        expect(testResults[0].TestCases[4].Status).toBe(MatlabTestStatus.FAILED);
+        expect(testResults[0].TestCases[8].Status).toBe(MatlabTestStatus.NOT_RUN);
+        expect(testResults[1].TestCases[0].Status).toBe(MatlabTestStatus.INCOMPLETE);
 
-    //     expect(testResults[0].TestCases[0].Status).toBe(MatlabTestStatus.PASSED);
-    //     expect(testResults[0].TestCases[4].Status).toBe(MatlabTestStatus.FAILED);
-    //     expect(testResults[0].TestCases[8].Status).toBe(MatlabTestStatus.NOT_RUN);
-    //     expect(testResults[1].TestCases[0].Status).toBe(MatlabTestStatus.INCOMPLETE);
+        expect(testResults[0].TestCases[0].Duration).toBeCloseTo(0.1);
+        expect(testResults[0].TestCases[1].Duration).toBeCloseTo(0.11);
+        expect(testResults[0].TestCases[2].Duration).toBeCloseTo(0.11);
+        expect(testResults[0].TestCases[4].Duration).toBeCloseTo(0.4);
+        expect(testResults[0].TestCases[8].Duration).toBeCloseTo(0.0);
+        expect(testResults[1].TestCases[0].Duration).toBeCloseTo(0.1);
 
-    //     expect(testResults[0].TestCases[0].Duration).toBeCloseTo(0.1);
-    //     expect(testResults[0].TestCases[1].Duration).toBeCloseTo(0.11);
-    //     expect(testResults[0].TestCases[2].Duration).toBeCloseTo(0.11);
-    //     expect(testResults[0].TestCases[4].Duration).toBeCloseTo(0.4);
-    //     expect(testResults[0].TestCases[8].Duration).toBeCloseTo(0.0);
-    //     expect(testResults[1].TestCases[0].Duration).toBeCloseTo(0.1);
+        expect(testResults[0].TestCases[4].Diagnostics[0].Event).toBe("SampleDiagnosticsEvent1");
+        expect(testResults[0].TestCases[4].Diagnostics[0].Report).toBe("SampleDiagnosticsReport1");
+        expect(testResults[1].TestCases[0].Diagnostics[0].Event).toBe("SampleDiagnosticsEvent2");
+        expect(testResults[1].TestCases[0].Diagnostics[0].Report).toBe("SampleDiagnosticsReport2");
+    });
 
-    //     expect(testResults[0].TestCases[4].Diagnostics[0].Event).toBe("SampleDiagnosticsEvent1");
-    //     expect(testResults[0].TestCases[4].Diagnostics[0].Report).toBe("SampleDiagnosticsReport1");
-    //     expect(testResults[1].TestCases[0].Diagnostics[0].Event).toBe("SampleDiagnosticsEvent2");
-    //     expect(testResults[1].TestCases[0].Diagnostics[0].Report).toBe("SampleDiagnosticsReport2");
-    // });
+    it("should store correct session file name", () => {
+        expect(testSession.FileName).toBe("matlabTestResults_session1.json");
+    });
 
-    // it("should handle test results with undefined Details property", () => {
-    //     const runnerTemp = path.join(import.meta.dirname, "..");
-    //     const testFilePath = path.join(runnerTemp, "matlabTestResults_undefined_details.json");
-
-    //     // Create test data with undefined Details
-    //     const testData = [
-    //         [
-    //             {
-    //                 BaseFolder: "/workspace/tests",
-    //                 TestResult: {
-    //                     Name: "TestFile/testCase1",
-    //                     Duration: 0.5,
-    //                     Failed: false,
-    //                     Incomplete: false,
-    //                     Passed: true,
-    //                     // Details property is intentionally omitted
-    //                 },
-    //             },
-    //         ],
-    //     ];
-
-    //     try {
-    //         fs.writeFileSync(testFilePath, JSON.stringify(testData));
-
-    //         const result = testResultsSummary.getTestResults(runnerTemp, "123", "/workspace");
-
-    //         expect(result).not.toBeNull();
-    //         if (result) {
-    //             expect(result.TestSessions.length).toBeGreaterThan(0);
-    //             const session = result.TestSessions.find(
-    //                 (s) => s.FileName === "matlabTestResults_undefined_details.json",
-    //             );
-    //             expect(session).toBeDefined();
-    //             if (session) {
-    //                 expect(session.TestResults.length).toBeGreaterThan(0);
-    //                 const testFile = session.TestResults[0];
-    //                 expect(testFile.TestCases.length).toBe(1);
-    //                 expect(testFile.TestCases[0].Diagnostics).toEqual([]);
-    //             }
-    //         }
-    //     } finally {
-    //         if (nodeFs.existsSync(testFilePath)) {
-    //             nodeFs.unlinkSync(testFilePath);
-    //         }
-    //     }
-    // });
-
-    // it("should handle test results with Details but no DiagnosticRecord", () => {
-    //     const runnerTemp = path.join(import.meta.dirname, "..");
-    //     const testFilePath = path.join(runnerTemp, "matlabTestResults_no_diagnostics.json");
-
-    //     // Create test data with Details but no DiagnosticRecord
-    //     const testData = [
-    //         [
-    //             {
-    //                 BaseFolder: "/workspace/tests",
-    //                 TestResult: {
-    //                     Name: "TestFile/testCase1",
-    //                     Duration: 0.5,
-    //                     Failed: false,
-    //                     Incomplete: false,
-    //                     Passed: true,
-    //                     Details: {},
-    //                 },
-    //             },
-    //         ],
-    //     ];
-
-    //     try {
-    //         fs.writeFileSync(testFilePath, JSON.stringify(testData));
-
-    //         const result = testResultsSummary.getTestResults(runnerTemp, "123", "/workspace");
-
-    //         expect(result).not.toBeNull();
-    //         if (result) {
-    //             expect(result.TestSessions.length).toBeGreaterThan(0);
-    //             const session = result.TestSessions.find(
-    //                 (s) => s.FileName === "matlabTestResults_no_diagnostics.json",
-    //             );
-    //             expect(session).toBeDefined();
-    //             if (session) {
-    //                 expect(session.TestResults.length).toBeGreaterThan(0);
-    //                 const testFile = session.TestResults[0];
-    //                 expect(testFile.TestCases.length).toBe(1);
-    //                 expect(testFile.TestCases[0].Diagnostics).toEqual([]);
-    //             }
-    //         }
-    //     } finally {
-    //         if (nodeFs.existsSync(testFilePath)) {
-    //             nodeFs.unlinkSync(testFilePath);
-    //         }
-    //     }
-    // });
-
-    it("should write test results data to the GitHub job summary", () => {
+    it("should write test results to GitHub job summary for single session", () => {
         if (testResultsData) {
+            (core.summary.addHeading as jest.Mock).mockClear();
+            (core.summary.addRaw as jest.Mock).mockClear();
+
             testResultsSummary.addSummary(testResultsData, null);
 
-            expect(mockAddHeading).toHaveBeenCalledTimes(2);
-
-            // First heading: overall results
-            expect(mockAddHeading).toHaveBeenNthCalledWith(
+            // Single session: overall header + "All tests" heading
+            expect(core.summary.addHeading).toHaveBeenCalledTimes(2);
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
                 1,
                 expect.stringContaining("MATLAB Test Results "),
             );
-            expect(mockAddHeading).toHaveBeenNthCalledWith(
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
                 1,
                 expect.stringContaining(
                     '<a href="https://github.com/matlab-actions/run-tests/blob/main/README.md#view-test-results"',
                 ),
             );
-            expect(mockAddHeading).toHaveBeenNthCalledWith(
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
                 1,
                 expect.stringContaining('target="_blank"'),
             );
-            expect(mockAddHeading).toHaveBeenNthCalledWith(1, expect.stringContaining("ℹ️</a>"));
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining("ℹ️</a>"),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(2, "All tests", 4);
 
-            expect(mockAddHeading).toHaveBeenNthCalledWith(2, "All tests", 4);
-
-            expect(mockAddRaw).toHaveBeenCalledTimes(2);
+            // Overall header + detailed results
+            expect(core.summary.addRaw).toHaveBeenCalledTimes(2);
         }
     });
 
-    it("should show session numbers when multiple sessions exist", () => {
+    it("should not add per-session headers for single session", () => {
         if (testResultsData) {
-            // Create a mock with multiple sessions
-            const multiSessionData: TestResultsData = {
-                TestSessions: [
-                    testResultsData.TestSessions[0],
-                    {
-                        FileName: "matlabTestResults_20250101_120001_000.json",
-                        TestResults: testResultsData.TestSessions[0].TestResults,
-                        Stats: testResultsData.TestSessions[0].Stats,
-                    },
-                ],
-                OverallStats: {
-                    Total: testResultsData.OverallStats.Total * 2,
-                    Passed: testResultsData.OverallStats.Passed * 2,
-                    Failed: testResultsData.OverallStats.Failed * 2,
-                    Incomplete: testResultsData.OverallStats.Incomplete * 2,
-                    NotRun: testResultsData.OverallStats.NotRun * 2,
-                    Duration: testResultsData.OverallStats.Duration * 2,
-                },
-            };
+            (core.summary.addHeading as jest.Mock).mockClear();
+            (core.summary.addRaw as jest.Mock).mockClear();
 
-            testResultsSummary.addSummary(multiSessionData, null);
+            testResultsSummary.addSummary(testResultsData, null);
 
-            expect(mockAddHeading).toHaveBeenCalledTimes(5);
-            expect(mockAddHeading).toHaveBeenNthCalledWith(2, "Test Session (Session 1)", 3);
-            expect(mockAddHeading).toHaveBeenNthCalledWith(4, "Test Session (Session 2)", 3);
+            const headingCalls = (core.summary.addHeading as jest.Mock).mock.calls;
+            const sessionHeaders = headingCalls.filter(
+                (call) => typeof call[0] === "string" && call[0].includes("Test Session"),
+            );
+            expect(sessionHeaders.length).toBe(0);
         }
+    });
+});
+
+describe("Multiple Sessions Tests", () => {
+    let testResultsData: TestResultsData | null;
+
+    beforeAll(() => {
+        const runnerTemp = path.join(import.meta.dirname, "..");
+        const runId = "456";
+        const osInfo = getOSInfo();
+        const workspace = path.join(osInfo.workspaceParent, "workspace");
+
+        const sourceFilePath = path.join(
+            import.meta.dirname,
+            "test-data",
+            "testResultsArtifacts",
+            "t1",
+            osInfo.osName,
+            "matlabTestResults.json",
+        );
+
+        // Copy the same data file twice to simulate multiple sessions
+        const dest1 = path.join(runnerTemp, "matlabTestResults_multi1.json");
+        const dest2 = path.join(runnerTemp, "matlabTestResults_multi2.json");
+
+        try {
+            fs.copyFileSync(sourceFilePath, dest1);
+            fs.copyFileSync(sourceFilePath, dest2);
+        } catch (err) {
+            console.error("Error copying test-data:", err);
+        }
+
+        testResultsData = testResultsSummary.getTestResults(runnerTemp, runId, workspace);
+    });
+
+    function getOSInfo() {
+        const platform = os.platform().toLowerCase();
+        if (platform.includes("win") && !platform.includes("darwin"))
+            return { osName: "windows", workspaceParent: "C:\\" };
+        if (platform.includes("linux") || platform.includes("unix") || platform.includes("aix"))
+            return { osName: "linux", workspaceParent: "/home/user/" };
+        if (platform.includes("darwin"))
+            return { osName: "mac", workspaceParent: "/Users/username/" };
+        throw new Error(`Unsupported OS: ${platform}`);
+    }
+
+    it("should return multiple test sessions", () => {
+        expect(testResultsData).not.toBeNull();
+        expect(testResultsData!.TestSessions.length).toBe(2);
+    });
+
+    it("should aggregate overall stats across sessions", () => {
+        const overallStats = testResultsData!.OverallStats;
+        expect(overallStats.Total).toBe(20);
+        expect(overallStats.Passed).toBe(8);
+        expect(overallStats.Failed).toBe(6);
+        expect(overallStats.Incomplete).toBe(4);
+        expect(overallStats.NotRun).toBe(2);
+        expect(overallStats.Duration).toBeCloseTo(3.66);
+    });
+
+    it("should have correct per-session stats", () => {
+        for (const session of testResultsData!.TestSessions) {
+            expect(session.Stats.Total).toBe(10);
+            expect(session.Stats.Passed).toBe(4);
+            expect(session.Stats.Failed).toBe(3);
+            expect(session.Stats.Incomplete).toBe(2);
+            expect(session.Stats.NotRun).toBe(1);
+            expect(session.Stats.Duration).toBeCloseTo(1.83);
+        }
+    });
+
+    it("should have correct test results per session", () => {
+        for (const session of testResultsData!.TestSessions) {
+            expect(session.TestResults.length).toBe(2);
+            expect(session.TestResults[0].TestCases.length).toBe(9);
+            expect(session.TestResults[1].TestCases.length).toBe(1);
+        }
+    });
+
+    it("should add per-session headers for multiple sessions", () => {
+        if (testResultsData) {
+            (core.summary.addHeading as jest.Mock).mockClear();
+            (core.summary.addRaw as jest.Mock).mockClear();
+
+            testResultsSummary.addSummary(testResultsData, null);
+
+            // Overall header + (session header + "All tests") * 2 sessions = 5 headings
+            expect(core.summary.addHeading).toHaveBeenCalledTimes(5);
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                1,
+                expect.stringContaining("MATLAB Test Results "),
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                2,
+                "Test Session (Session 1)",
+                3,
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(3, "All tests", 4);
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
+                4,
+                "Test Session (Session 2)",
+                3,
+            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(5, "All tests", 4);
+
+            // Overall header + (session header + detailed results) * 2 = 5 addRaw calls
+            expect(core.summary.addRaw).toHaveBeenCalledTimes(5);
+        }
+    });
+});
+
+describe("No Results Tests", () => {
+    it("should return null when no matching files exist", () => {
+        const emptyDir = path.join(import.meta.dirname, "test-data");
+        const result = testResultsSummary.getTestResults(emptyDir, "999", "");
+        expect(result).toBeNull();
+    });
+
+    it("should return null when directory does not exist", () => {
+        const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+        const result = testResultsSummary.getTestResults("/nonexistent/path", "999", "");
+        expect(result).toBeNull();
+        consoleSpy.mockRestore();
     });
 });
 
@@ -341,12 +340,9 @@ describe("HTML Structure Tests", () => {
         [MatlabTestStatus.FAILED, "❌"],
         [MatlabTestStatus.INCOMPLETE, "⚠️"],
         [MatlabTestStatus.NOT_RUN, "🚫"],
-    ])(
-        "should return %s emoji for %s Status",
-        (status: MatlabTestStatus, expectedEmoji: string) => {
-            expect(testResultsSummary.getStatusEmoji(status)).toBe(expectedEmoji);
-        },
-    );
+    ])("should return %s emoji for %s Status", (Status, expectedEmoji) => {
+        expect(testResultsSummary.getStatusEmoji(Status)).toBe(expectedEmoji);
+    });
 
     it("should generate valid HTML table structure for header", () => {
         const mockStats: TestStatistics = {
@@ -485,19 +481,37 @@ describe("HTML Structure Tests", () => {
         expect(htmlDetails).toContain("<b>1.50</b>");
         expect(htmlDetails).toContain("<b>0.30</b>");
     });
+
+    it("should use forward slashes in displayed path", () => {
+        const mockTestResults: MatlabTestFile[] = [
+            {
+                Name: "TestFile",
+                Path: "src\\tests\\TestFile",
+                Duration: 0.5,
+                Status: MatlabTestStatus.PASSED,
+                TestCases: [
+                    {
+                        Name: "testCase1",
+                        Duration: 0.5,
+                        Status: MatlabTestStatus.PASSED,
+                        Diagnostics: [],
+                    },
+                ],
+            },
+        ];
+
+        const htmlDetails = testResultsSummary.getDetailedResults(mockTestResults);
+        expect(htmlDetails).toContain('title="src/tests/TestFile"');
+        expect(htmlDetails).not.toContain("src\\tests\\TestFile");
+    });
 });
 
 describe("Error Handling Tests", () => {
-    beforeEach(() => {
-        mockAddHeading.mockClear().mockReturnThis();
-        mockAddRaw.mockClear().mockReturnThis();
-    });
-
     it("should handle errors gracefully in addSummary", () => {
         const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-        // Mock addHeading to throw an error for this specific test
-        mockAddHeading.mockImplementationOnce(() => {
+        // Mock addHeading to throw an error
+        (core.summary.addHeading as jest.Mock).mockImplementationOnce(() => {
             throw new Error("Mock error in addHeading");
         });
 
@@ -509,12 +523,11 @@ describe("Error Handling Tests", () => {
             NotRun: 0,
             Duration: 0.5,
         };
-        const mockTestResults: MatlabTestFile[] = [];
         const mockTestResultsData: TestResultsData = {
             TestSessions: [
                 {
-                    FileName: "test.json",
-                    TestResults: mockTestResults,
+                    FileName: "matlabTestResults_test.json",
+                    TestResults: [],
                     Stats: mockStats,
                 },
             ],
@@ -533,38 +546,22 @@ describe("Error Handling Tests", () => {
         );
 
         consoleSpy.mockRestore();
-
-        // Restore the mock to its default behavior
-        mockAddHeading.mockReturnThis();
     });
 
     it("should handle JSON parsing errors gracefully", () => {
         const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-        // Set up environment variables
-        process.env.RUNNER_TEMP = path.join(import.meta.dirname, "..");
-        process.env.GITHUB_RUN_ID = "123";
-        process.env.GITHUB_ACTION = "run-tests";
+        const runnerTemp = path.join(import.meta.dirname, "..");
 
-        // Create a file with invalid JSON
-        const invalidJsonPath = path.join(
-            process.env.RUNNER_TEMP,
-            "matlabTestResults_invalid.json",
-        );
+        // Create a file with invalid JSON matching the new naming pattern
+        const invalidJsonPath = path.join(runnerTemp, "matlabTestResults_invalid.json");
         fs.writeFileSync(invalidJsonPath, "{ invalid json content");
 
         try {
-            const result = testResultsSummary.getTestResults(
-                process.env.RUNNER_TEMP,
-                process.env.GITHUB_RUN_ID,
-                "",
-            );
-
-            // Should return data but skip the invalid file
-            if (result) {
-                // The invalid file should be skipped, so we might have 0 sessions
-                expect(result.TestSessions).toBeDefined();
-            }
+            const result = testResultsSummary.getTestResults(runnerTemp, "123", "");
+            expect(result).not.toBeNull();
+            expect(result!.TestSessions.length).toBe(0);
+            expect(result!.OverallStats.Total).toBe(0);
 
             // Verify error was logged
             expect(consoleSpy).toHaveBeenCalledWith(
@@ -590,30 +587,19 @@ describe("Error Handling Tests", () => {
             throw new Error("Permission denied - cannot delete file");
         });
 
-        // Set up environment variables
-        process.env.RUNNER_TEMP = path.join(import.meta.dirname, "..");
-        process.env.GITHUB_RUN_ID = "123";
-        process.env.GITHUB_ACTION = "run-tests";
+        const runnerTemp = path.join(import.meta.dirname, "..");
 
-        // Create a valid JSON file
-        const validJsonPath = path.join(
-            process.env.RUNNER_TEMP,
-            "matlabTestResults_delete_test.json",
-        );
-        fs.writeFileSync(validJsonPath, "[[]]"); // Empty array - valid JSON
+        // Create a valid JSON file matching the new naming pattern
+        const validJsonPath = path.join(runnerTemp, "matlabTestResults_deletetest.json");
+        fs.writeFileSync(validJsonPath, "[]"); // Empty array - valid JSON
 
         try {
-            const result = testResultsSummary.getTestResults(
-                process.env.RUNNER_TEMP,
-                process.env.GITHUB_RUN_ID,
-                "",
-            );
+            const result = testResultsSummary.getTestResults(runnerTemp, "123", "");
 
             // Should still return results even if deletion fails
-            expect(result).toBeDefined();
-            if (result) {
-                expect(result.TestSessions.length).toBeGreaterThanOrEqual(0);
-            }
+            expect(result).not.toBeNull();
+            expect(result!.TestSessions.length).toBe(1);
+            expect(result!.TestSessions[0].TestResults).toEqual([]);
 
             // Verify deletion error was logged
             expect(consoleSpy).toHaveBeenCalledWith(
@@ -642,16 +628,13 @@ describe("Error Handling Tests", () => {
     it("should handle directory read errors gracefully", () => {
         const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-        // Use a non-existent directory
-        const nonExistentDir = path.join(import.meta.dirname, "non_existent_directory_12345");
-
-        const result = testResultsSummary.getTestResults(nonExistentDir, "123", "");
+        const result = testResultsSummary.getTestResults("/nonexistent/directory/path", "123", "");
 
         expect(result).toBeNull();
-
-        // The error message includes a colon after the directory path
         expect(consoleSpy).toHaveBeenCalledWith(
-            `An error occurred while finding test results summary file(s) in directory ${nonExistentDir}:`,
+            expect.stringContaining(
+                "An error occurred while finding test results summary file(s) in directory",
+            ),
             expect.any(Error),
         );
 
