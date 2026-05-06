@@ -491,13 +491,13 @@ describe("Multiple Sessions Tests", () => {
             );
             expect(core.summary.addHeading).toHaveBeenNthCalledWith(
                 2,
-                "Test Session (Session 1)",
+                "Test Session 1",
                 3,
             );
             expect(core.summary.addHeading).toHaveBeenNthCalledWith(3, "All tests", 4);
             expect(core.summary.addHeading).toHaveBeenNthCalledWith(
                 4,
-                "Test Session (Session 2)",
+                "Test Session 2",
                 3,
             );
             expect(core.summary.addHeading).toHaveBeenNthCalledWith(5, "All tests", 4);

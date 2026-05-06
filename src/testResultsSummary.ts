@@ -208,7 +208,7 @@ export function addSummary(
                 if (testResultsData.TestSessions.length > 1) {
                     // Add session header with stats
                     core.summary
-                        .addHeading(`Test Session (Session ${i + 1})`, 3)
+                        .addHeading(`Test Session ${i + 1}`, 3)
                         .addRaw(getTestHeader(session.Stats), true);
                 }
 
