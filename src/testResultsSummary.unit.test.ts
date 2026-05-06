@@ -60,7 +60,7 @@ describe("Artifact Processing Tests", () => {
         }
 
         // Clean up test file since unlinkSync is mocked
-        const testFile = path.join(runnerTemp, "matlabTestResults_session1.json");
+        const testFile = path.join(runnerTemp, "matlabTestResults_20250101_100000_001.json");
         try {
             nodeFs.unlinkSync(testFile);
         } catch (e) {
@@ -86,9 +86,12 @@ describe("Artifact Processing Tests", () => {
             "testResultsArtifacts",
             "t1",
             osName,
-            "matlabTestResults.json",
+            "matlabTestResults_20250101_100000_001.json",
         );
-        const destinationFilePath = path.join(runnerTemp, "matlabTestResults_session1.json");
+        const destinationFilePath = path.join(
+            runnerTemp,
+            "matlabTestResults_20250101_100000_001.json",
+        );
 
         try {
             fs.copyFileSync(sourceFilePath, destinationFilePath);
@@ -198,7 +201,7 @@ describe("Artifact Processing Tests", () => {
     });
 
     it("should store correct session file name", () => {
-        expect(testSession.FileName).toBe("matlabTestResults_session1.json");
+        expect(testSession.FileName).toBe("matlabTestResults_20250101_100000_001.json");
     });
 
     it("should return correct session stats for valid JSON", () => {
@@ -410,12 +413,12 @@ describe("Multiple Sessions Tests", () => {
             "testResultsArtifacts",
             "t1",
             osInfo.osName,
-            "matlabTestResults.json",
+            "matlabTestResults_20250101_100000_001.json",
         );
 
         // Copy the same data file twice to simulate multiple sessions
-        const dest1 = path.join(runnerTemp, "matlabTestResults_multi1.json");
-        const dest2 = path.join(runnerTemp, "matlabTestResults_multi2.json");
+        const dest1 = path.join(runnerTemp, "matlabTestResults_20250101_100000_011.json");
+        const dest2 = path.join(runnerTemp, "matlabTestResults_20250101_100000_012.json");
 
         try {
             fs.copyFileSync(sourceFilePath, dest1);
@@ -516,7 +519,7 @@ describe("Multiple Sessions Tests", () => {
         const emptySessionData: TestResultsData = {
             TestSessions: [
                 {
-                    FileName: "matlabTestResults_empty.json",
+                    FileName: "matlabTestResults_20250101_100000_099.json",
                     TestResults: [],
                     Stats: mockStats,
                 },
@@ -577,7 +580,7 @@ describe("Error Handling Tests", () => {
         const mockTestResultsData: TestResultsData = {
             TestSessions: [
                 {
-                    FileName: "matlabTestResults_test.json",
+                    FileName: "matlabTestResults_20250101_100000_098.json",
                     TestResults: [],
                     Stats: mockStats,
                 },
@@ -605,7 +608,7 @@ describe("Error Handling Tests", () => {
         const runnerTemp = path.join(import.meta.dirname, "..");
 
         // Create a file with invalid JSON matching the new naming pattern
-        const invalidJsonPath = path.join(runnerTemp, "matlabTestResults_invalid.json");
+        const invalidJsonPath = path.join(runnerTemp, "matlabTestResults_20250101_100000_097.json");
         fs.writeFileSync(invalidJsonPath, "{ invalid json content");
 
         try {
@@ -641,7 +644,7 @@ describe("Error Handling Tests", () => {
         const runnerTemp = path.join(import.meta.dirname, "..");
 
         // Create a valid JSON file matching the new naming pattern
-        const validJsonPath = path.join(runnerTemp, "matlabTestResults_deletetest.json");
+        const validJsonPath = path.join(runnerTemp, "matlabTestResults_20250101_100000_096.json");
         fs.writeFileSync(validJsonPath, "[]"); // Empty array - valid JSON
 
         try {
@@ -674,5 +677,104 @@ describe("Error Handling Tests", () => {
                 // Ignore cleanup errors
             }
         }
+    });
+});
+
+describe("Data Processing Edge Cases", () => {
+    let testResultsData: TestResultsData | null;
+    let testCases: ReturnType<typeof testResultsSummary.getTestResults> extends infer R
+        ? R extends { TestSessions: { TestResults: { TestCases: infer TC }[] }[] }
+            ? TC
+            : never
+        : never;
+
+    function getOSInfoHelper() {
+        const platform = os.platform().toLowerCase();
+        if (platform.includes("win") && !platform.includes("darwin"))
+            return { osName: "windows", workspaceParent: "C:\\" };
+        if (platform.includes("linux") || platform.includes("unix") || platform.includes("aix"))
+            return { osName: "linux", workspaceParent: "/home/user/" };
+        if (platform.includes("darwin"))
+            return { osName: "mac", workspaceParent: "/Users/username/" };
+        throw new Error(`Unsupported OS: ${platform}`);
+    }
+
+    function copyTestDataAndRun(testFolder: string, sourceFileName: string, destFileName: string) {
+        const runnerTemp = path.join(import.meta.dirname, "..");
+        const osInfo = getOSInfoHelper();
+        const workspace = path.join(osInfo.workspaceParent, "workspace");
+
+        const sourceFilePath = path.join(
+            import.meta.dirname,
+            "test-data",
+            "testResultsArtifacts",
+            testFolder,
+            osInfo.osName,
+            sourceFileName,
+        );
+        const destPath = path.join(runnerTemp, destFileName);
+        fs.copyFileSync(sourceFilePath, destPath);
+
+        const result = testResultsSummary.getTestResults(runnerTemp, "700", workspace);
+
+        // Clean up since unlinkSync is mocked
+        try {
+            nodeFs.unlinkSync(destPath);
+        } catch (e) {
+            /* ignore */
+        }
+
+        return result;
+    }
+
+    it("should handle single object JSON (non-array test artifact)", () => {
+        const result = copyTestDataAndRun(
+            "t2",
+            "matlabTestResults_20250101_100000_002.json",
+            "matlabTestResults_20250101_100000_021.json",
+        );
+        expect(result).not.toBeNull();
+        expect(result!.TestSessions.length).toBe(1);
+        expect(result!.TestSessions[0].TestResults.length).toBe(1);
+        expect(result!.TestSessions[0].TestResults[0].Name).toBe("SingleTest");
+        expect(result!.TestSessions[0].TestResults[0].TestCases.length).toBe(1);
+        expect(result!.TestSessions[0].TestResults[0].TestCases[0].Name).toBe("testCase1");
+        expect(result!.TestSessions[0].TestResults[0].TestCases[0].Status).toBe(
+            MatlabTestStatus.PASSED,
+        );
+        expect(result!.TestSessions[0].TestResults[0].TestCases[0].Duration).toBeCloseTo(0.25);
+    });
+
+    describe("diagnostics and duration edge cases (t3)", () => {
+        beforeAll(() => {
+            testResultsData = copyTestDataAndRun(
+                "t3",
+                "matlabTestResults_20250101_100000_003.json",
+                "matlabTestResults_20250101_100000_031.json",
+            );
+            testCases = testResultsData!.TestSessions[0].TestResults[0].TestCases;
+        });
+
+        it("should handle multiple DiagnosticRecords as an array", () => {
+            const tc = testCases[0];
+            expect(tc.Name).toBe("testMultipleDiags");
+            expect(tc.Diagnostics.length).toBe(2);
+            expect(tc.Diagnostics[0].Event).toBe("DiagEvent1");
+            expect(tc.Diagnostics[0].Report).toBe("First diagnostic report");
+            expect(tc.Diagnostics[1].Event).toBe("DiagEvent2");
+            expect(tc.Diagnostics[1].Report).toBe("Second diagnostic report");
+        });
+
+        it("should handle missing DiagnosticRecord with empty diagnostics array", () => {
+            const tc = testCases[1];
+            expect(tc.Name).toBe("testNoDiag");
+            expect(tc.Diagnostics).toEqual([]);
+        });
+
+        it("should round duration to 2 decimal places", () => {
+            expect(testCases[2].Duration).toBe(0.11);
+            expect(testCases[3].Duration).toBe(1.0);
+            expect(testCases[4].Duration).toBe(0.01);
+        });
     });
 });

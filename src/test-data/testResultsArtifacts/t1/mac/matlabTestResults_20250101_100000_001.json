@@ -2,60 +2,51 @@
     {
         "TestResult": {
             "Duration": 0.1,
-            "Details": {
-                "SimulinkTestManagerResults": []
-            },
+            "Details": {},
             "Name": "TestExamples1/testNonLeapYear",
             "Passed": true,
             "Failed": false,
             "Incomplete": false
         },
-        "BaseFolder": "C:\\workspace\\visualization\\tests"
+        "BaseFolder": "/Users/username/workspace/visualization/tests"
     },
     {
         "TestResult": {
             "Duration": 0.11,
-            "Details": {
-                "SimulinkTestManagerResults": []
-            },
+            "Details": {},
             "Name": "TestExamples1/testNonLeapYear2",
             "Passed": true,
             "Failed": false,
             "Incomplete": false
         },
-        "BaseFolder": "C:\\workspace\\visualization\\tests"
+        "BaseFolder": "/Users/username/workspace/visualization/tests"
     },
     {
         "TestResult": {
             "Duration": 0.111,
-            "Details": {
-                "SimulinkTestManagerResults": []
-            },
+            "Details": {},
             "Name": "TestExamples1/testNonLeapYear3",
             "Passed": true,
             "Failed": false,
             "Incomplete": false
         },
-        "BaseFolder": "C:\\workspace\\visualization\\tests"
+        "BaseFolder": "/Users/username/workspace/visualization/tests"
     },
     {
         "TestResult": {
             "Duration": 0.1111,
-            "Details": {
-                "SimulinkTestManagerResults": []
-            },
+            "Details": {},
             "Name": "TestExamples1/testNonLeapYear4",
             "Passed": true,
             "Failed": false,
             "Incomplete": false
         },
-        "BaseFolder": "C:\\workspace\\visualization\\tests"
+        "BaseFolder": "/Users/username/workspace/visualization/tests"
     },
     {
         "TestResult": {
             "Duration": 0.4,
             "Details": {
-                "SimulinkTestManagerResults": [],
                 "DiagnosticRecord": {
                     "TestDiagnosticResults": [],
                     "FrameworkDiagnosticResults": {
@@ -64,7 +55,7 @@
                     },
                     "AdditionalDiagnosticResults": [],
                     "Stack": {
-                        "file": "C:\\workspace\\visualization\\tests\\TestExamples1.m",
+                        "file": "/Users/username/workspace/visualization/tests/TestExamples1.m",
                         "name": "TestExamples1.testLeapYear",
                         "line": 35
                     },
@@ -79,13 +70,12 @@
             "Failed": true,
             "Incomplete": true
         },
-        "BaseFolder": "C:\\workspace\\visualization\\tests"
+        "BaseFolder": "/Users/username/workspace/visualization/tests"
     },
     {
         "TestResult": {
             "Duration": 0.4,
             "Details": {
-                "SimulinkTestManagerResults": [],
                 "DiagnosticRecord": {
                     "TestDiagnosticResults": [],
                     "FrameworkDiagnosticResults": {
@@ -94,7 +84,7 @@
                     },
                     "AdditionalDiagnosticResults": [],
                     "Stack": {
-                        "file": "C:\\workspace\\visualization\\tests\\TestExamples1.m",
+                        "file": "/Users/username/workspace/visualization/tests/TestExamples1.m",
                         "name": "TestExamples1.testLeapYear2",
                         "line": 35
                     },
@@ -109,13 +99,12 @@
             "Failed": true,
             "Incomplete": true
         },
-        "BaseFolder": "C:\\workspace\\visualization\\tests"
+        "BaseFolder": "/Users/username/workspace/visualization/tests"
     },
     {
         "TestResult": {
             "Duration": 0.4,
             "Details": {
-                "SimulinkTestManagerResults": [],
                 "DiagnosticRecord": {
                     "TestDiagnosticResults": [],
                     "FrameworkDiagnosticResults": {
@@ -124,7 +113,7 @@
                     },
                     "AdditionalDiagnosticResults": [],
                     "Stack": {
-                        "file": "C:\\workspace\\visualization\\tests\\TestExamples1.m",
+                        "file": "/Users/username/workspace/visualization/tests/TestExamples1.m",
                         "name": "TestExamples1.testLeapYear3",
                         "line": 35
                     },
@@ -139,13 +128,12 @@
             "Failed": true,
             "Incomplete": true
         },
-        "BaseFolder": "C:\\workspace\\visualization\\tests"
+        "BaseFolder": "/Users/username/workspace/visualization/tests"
     },
     {
         "TestResult": {
             "Duration": 0.1,
             "Details": {
-                "SimulinkTestManagerResults": [],
                 "DiagnosticRecord": {
                     "TestDiagnosticResults": [],
                     "FrameworkDiagnosticResults": {
@@ -154,7 +142,7 @@
                     },
                     "AdditionalDiagnosticResults": [],
                     "Stack": {
-                        "file": "C:\\workspace\\visualization\\tests\\TestExamples1.m",
+                        "file": "/Users/username/workspace/visualization/tests/TestExamples1.m",
                         "name": "TestExamples1.testValidDateFormat",
                         "line": 35
                     },
@@ -169,26 +157,23 @@
             "Failed": false,
             "Incomplete": true
         },
-        "BaseFolder": "C:\\workspace\\visualization\\tests"
+        "BaseFolder": "/Users/username/workspace/visualization/tests"
     },
     {
         "TestResult": {
             "Duration": 0,
-            "Details": {
-                "SimulinkTestManagerResults": []
-            },
+            "Details": {},
             "Name": "TestExamples1/testInvalidDateFormat",
             "Passed": false,
             "Failed": false,
             "Incomplete": false
         },
-        "BaseFolder": "C:\\workspace\\visualization\\tests"
+        "BaseFolder": "/Users/username/workspace/visualization/tests"
     },
     {
         "TestResult": {
             "Duration": 0.1,
             "Details": {
-                "SimulinkTestManagerResults": [],
                 "DiagnosticRecord": {
                     "TestDiagnosticResults": [],
                     "FrameworkDiagnosticResults": {
@@ -197,7 +182,7 @@
                     },
                     "AdditionalDiagnosticResults": [],
                     "Stack": {
-                        "file": "C:\\workspace\\visualization\\duplicate_tests\\TestExamples2.m",
+                        "file": "/Users/username/workspace/visualization/duplicate_tests/TestExamples2.m",
                         "name": "TestExamples2.testNonLeapYear",
                         "line": 35
                     },
@@ -212,6 +197,6 @@
             "Failed": false,
             "Incomplete": true
         },
-        "BaseFolder": "C:\\workspace\\visualization\\duplicate_tests"
+        "BaseFolder": "/Users/username/workspace/visualization/duplicate_tests"
     }
 ]
