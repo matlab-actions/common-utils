@@ -489,17 +489,9 @@ describe("Multiple Sessions Tests", () => {
                 1,
                 expect.stringContaining("MATLAB Test Results "),
             );
-            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-                2,
-                "Test Session 1",
-                3,
-            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(2, "Test Session 1", 3);
             expect(core.summary.addHeading).toHaveBeenNthCalledWith(3, "All tests", 4);
-            expect(core.summary.addHeading).toHaveBeenNthCalledWith(
-                4,
-                "Test Session 2",
-                3,
-            );
+            expect(core.summary.addHeading).toHaveBeenNthCalledWith(4, "Test Session 2", 3);
             expect(core.summary.addHeading).toHaveBeenNthCalledWith(5, "All tests", 4);
 
             // Overall header + (session header + detailed results) * 2 = 5 addRaw calls
