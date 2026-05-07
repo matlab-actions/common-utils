@@ -1,0 +1,11 @@
+{
+    "TestResult": {
+        "Duration": 0.25,
+        "Details": {},
+        "Name": "SingleTest/testCase1",
+        "Passed": true,
+        "Failed": false,
+        "Incomplete": false
+    },
+    "BaseFolder": "C:\\workspace\\src\\tests"
+}
