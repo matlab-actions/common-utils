@@ -46,13 +46,12 @@ describe("Artifact Processing Tests", () => {
 
     beforeAll(() => {
         const runnerTemp = path.join(import.meta.dirname, "..");
-        const runId = "123";
         const osInfo = getOSInfo();
         const workspace = path.join(osInfo.workspaceParent, "workspace");
 
         copyTestDataFile(osInfo.osName, runnerTemp);
 
-        testResultsData = testResultsSummary.getTestResults(runnerTemp, runId, workspace);
+        testResultsData = testResultsSummary.getTestResults(runnerTemp, workspace);
         if (testResultsData) {
             testSession = testResultsData.TestSessions[0];
             testResults = testSession.TestResults;
@@ -403,7 +402,6 @@ describe("Multiple Sessions Tests", () => {
 
     beforeAll(() => {
         const runnerTemp = path.join(import.meta.dirname, "..");
-        const runId = "456";
         const osInfo = getOSInfo();
         const workspace = path.join(osInfo.workspaceParent, "workspace");
 
@@ -427,7 +425,7 @@ describe("Multiple Sessions Tests", () => {
             console.error("Error copying test-data:", err);
         }
 
-        testResultsData = testResultsSummary.getTestResults(runnerTemp, runId, workspace);
+        testResultsData = testResultsSummary.getTestResults(runnerTemp, workspace);
 
         // Clean up test files since unlinkSync is mocked
         try {
@@ -536,13 +534,13 @@ describe("Multiple Sessions Tests", () => {
 describe("No Results Tests", () => {
     it("should return null when no matching files exist", () => {
         const emptyDir = path.join(import.meta.dirname, "test-data");
-        const result = testResultsSummary.getTestResults(emptyDir, "999", "");
+        const result = testResultsSummary.getTestResults(emptyDir, "");
         expect(result).toBeNull();
     });
 
     it("should return null when directory does not exist", () => {
         const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-        const result = testResultsSummary.getTestResults("/nonexistent/directory/path", "999", "");
+        const result = testResultsSummary.getTestResults("/nonexistent/directory/path", "");
         expect(result).toBeNull();
         expect(consoleSpy).toHaveBeenCalled();
         expect(consoleSpy.mock.calls[0][0] as string).toContain(
@@ -604,7 +602,7 @@ describe("Error Handling Tests", () => {
         fs.writeFileSync(invalidJsonPath, "{ invalid json content");
 
         try {
-            const result = testResultsSummary.getTestResults(runnerTemp, "123", "");
+            const result = testResultsSummary.getTestResults(runnerTemp, "");
             expect(result).not.toBeNull();
             expect(result!.TestSessions.length).toBe(0);
             expect(result!.OverallStats.Total).toBe(0);
@@ -640,7 +638,7 @@ describe("Error Handling Tests", () => {
         fs.writeFileSync(validJsonPath, "[]"); // Empty array - valid JSON
 
         try {
-            const result = testResultsSummary.getTestResults(runnerTemp, "123", "");
+            const result = testResultsSummary.getTestResults(runnerTemp, "");
 
             // Should still return results even if deletion fails
             expect(result).not.toBeNull();
@@ -707,7 +705,7 @@ describe("Data Processing Edge Cases", () => {
         const destPath = path.join(runnerTemp, destFileName);
         fs.copyFileSync(sourceFilePath, destPath);
 
-        const result = testResultsSummary.getTestResults(runnerTemp, "700", workspace);
+        const result = testResultsSummary.getTestResults(runnerTemp, workspace);
 
         // Clean up since unlinkSync is mocked
         try {

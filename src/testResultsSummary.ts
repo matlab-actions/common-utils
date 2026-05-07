@@ -69,18 +69,14 @@ export interface TestResultsData {
 }
 
 export function processAndAddTestSummary(runnerTemp: string, runId: string, workspace: string) {
-    const testResultsData = getTestResults(runnerTemp, runId, workspace);
+    const testResultsData = getTestResults(runnerTemp, workspace);
     const coverageResultsData = getCoverageResults(runnerTemp, runId);
     if (testResultsData || coverageResultsData) {
         addSummary(testResultsData, coverageResultsData);
     }
 }
 
-export function getTestResults(
-    runnerTemp: string,
-    runId: string,
-    workspace: string,
-): TestResultsData | null {
+export function getTestResults(runnerTemp: string, workspace: string): TestResultsData | null {
     let testResultsData = null;
     const filePrefix = `matlabTestResults_`;
     const fileSuffix = `.json`;
@@ -88,9 +84,9 @@ export function getTestResults(
     // Find all test result files matching the pattern
     let testResultFiles: string[] = [];
     try {
-        testResultFiles = readdirSync(runnerTemp).filter(
-            (file) => file.startsWith(filePrefix) && file.endsWith(fileSuffix),
-        );
+        testResultFiles = readdirSync(runnerTemp)
+            .filter((file) => file.startsWith(filePrefix) && file.endsWith(fileSuffix))
+            .sort();
     } catch (e) {
         console.error(
             `An error occurred while finding test results summary file(s) in directory ${runnerTemp}:`,
