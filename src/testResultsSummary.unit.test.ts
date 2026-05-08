@@ -37,6 +37,55 @@ const fs = await import("fs");
 const testResultsSummary = await import("./testResultsSummary.js");
 const { MatlabTestStatus } = testResultsSummary;
 
+function getOSInfo() {
+    const platform = os.platform().toLowerCase();
+    if (platform.includes("win") && !platform.includes("darwin"))
+        return { osName: "windows", workspaceParent: "C:\\" };
+    if (platform.includes("linux") || platform.includes("unix") || platform.includes("aix"))
+        return { osName: "linux", workspaceParent: "/home/user/" };
+    if (platform.includes("darwin")) return { osName: "mac", workspaceParent: "/Users/username/" };
+    throw new Error(`Unsupported OS: ${platform}`);
+}
+
+function safeDelete(filePath: string) {
+    try {
+        nodeFs.unlinkSync(filePath);
+    } catch (e) {
+        /* ignore */
+    }
+}
+
+const runnerTemp = path.join(import.meta.dirname, "..");
+const osInfo = getOSInfo();
+const workspace = path.join(osInfo.workspaceParent, "workspace");
+
+function getTestDataSource(testFolder: string, fileName: string) {
+    return path.join(
+        import.meta.dirname,
+        "test-data",
+        "testResultsArtifacts",
+        testFolder,
+        osInfo.osName,
+        fileName,
+    );
+}
+
+function copyTestDataAndRun(
+    testFolder: string,
+    sourceFileName: string,
+    destFileName: string,
+    actionName = "",
+) {
+    const sourceFilePath = getTestDataSource(testFolder, sourceFileName);
+    const destPath = path.join(runnerTemp, destFileName);
+    fs.copyFileSync(sourceFilePath, destPath);
+
+    const result = testResultsSummary.getTestResults(runnerTemp, actionName, workspace);
+
+    safeDelete(destPath);
+    return result;
+}
+
 describe("Artifact Processing Tests", () => {
     // Shared test data
     let testResultsData: TestResultsData | null;
@@ -45,59 +94,27 @@ describe("Artifact Processing Tests", () => {
     let stats: TestStatistics;
 
     beforeAll(() => {
-        const runnerTemp = path.join(import.meta.dirname, "..");
-        const osInfo = getOSInfo();
-        const workspace = path.join(osInfo.workspaceParent, "workspace");
+        const sourceFilePath = getTestDataSource(
+            "t1",
+            "matlabTestResults_20250101_100000_001.json",
+        );
+        const destPath = path.join(runnerTemp, "matlabTestResults_20250101_100000_001.json");
 
-        copyTestDataFile(osInfo.osName, runnerTemp);
+        try {
+            fs.copyFileSync(sourceFilePath, destPath);
+        } catch (err) {
+            console.error("Error copying test-data:", err);
+        }
 
-        testResultsData = testResultsSummary.getTestResults(runnerTemp, workspace);
+        testResultsData = testResultsSummary.getTestResults(runnerTemp, "", workspace);
         if (testResultsData) {
             testSession = testResultsData.TestSessions[0];
             testResults = testSession.TestResults;
             stats = testResultsData.OverallStats;
         }
 
-        // Clean up test file since unlinkSync is mocked
-        const testFile = path.join(runnerTemp, "matlabTestResults_20250101_100000_001.json");
-        try {
-            nodeFs.unlinkSync(testFile);
-        } catch (e) {
-            /* ignore */
-        }
+        safeDelete(destPath);
     });
-
-    function getOSInfo() {
-        const platform = os.platform().toLowerCase();
-        if (platform.includes("win") && !platform.includes("darwin"))
-            return { osName: "windows", workspaceParent: "C:\\" };
-        if (platform.includes("linux") || platform.includes("unix") || platform.includes("aix"))
-            return { osName: "linux", workspaceParent: "/home/user/" };
-        if (platform.includes("darwin"))
-            return { osName: "mac", workspaceParent: "/Users/username/" };
-        throw new Error(`Unsupported OS: ${platform}`);
-    }
-
-    function copyTestDataFile(osName: string, runnerTemp: string) {
-        const sourceFilePath = path.join(
-            import.meta.dirname,
-            "test-data",
-            "testResultsArtifacts",
-            "t1",
-            osName,
-            "matlabTestResults_20250101_100000_001.json",
-        );
-        const destinationFilePath = path.join(
-            runnerTemp,
-            "matlabTestResults_20250101_100000_001.json",
-        );
-
-        try {
-            fs.copyFileSync(sourceFilePath, destinationFilePath);
-        } catch (err) {
-            console.error("Error copying test-data:", err);
-        }
-    }
 
     it("should return correct test results data for valid JSON", () => {
         expect(testResultsData).toBeDefined();
@@ -389,28 +406,9 @@ describe("HTML Structure Tests", () => {
 describe("Multiple Sessions Tests", () => {
     let testResultsData: TestResultsData | null;
 
-    function getOSInfo() {
-        const platform = os.platform().toLowerCase();
-        if (platform.includes("win") && !platform.includes("darwin"))
-            return { osName: "windows", workspaceParent: "C:\\" };
-        if (platform.includes("linux") || platform.includes("unix") || platform.includes("aix"))
-            return { osName: "linux", workspaceParent: "/home/user/" };
-        if (platform.includes("darwin"))
-            return { osName: "mac", workspaceParent: "/Users/username/" };
-        throw new Error(`Unsupported OS: ${platform}`);
-    }
-
     beforeAll(() => {
-        const runnerTemp = path.join(import.meta.dirname, "..");
-        const osInfo = getOSInfo();
-        const workspace = path.join(osInfo.workspaceParent, "workspace");
-
-        const sourceFilePath = path.join(
-            import.meta.dirname,
-            "test-data",
-            "testResultsArtifacts",
+        const sourceFilePath = getTestDataSource(
             "t1",
-            osInfo.osName,
             "matlabTestResults_20250101_100000_001.json",
         );
 
@@ -425,19 +423,10 @@ describe("Multiple Sessions Tests", () => {
             console.error("Error copying test-data:", err);
         }
 
-        testResultsData = testResultsSummary.getTestResults(runnerTemp, workspace);
+        testResultsData = testResultsSummary.getTestResults(runnerTemp, "", workspace);
 
-        // Clean up test files since unlinkSync is mocked
-        try {
-            nodeFs.unlinkSync(dest1);
-        } catch (e) {
-            /* ignore */
-        }
-        try {
-            nodeFs.unlinkSync(dest2);
-        } catch (e) {
-            /* ignore */
-        }
+        safeDelete(dest1);
+        safeDelete(dest2);
     });
 
     it("should return multiple test sessions", () => {
@@ -534,19 +523,83 @@ describe("Multiple Sessions Tests", () => {
 describe("No Results Tests", () => {
     it("should return null when no matching files exist", () => {
         const emptyDir = path.join(import.meta.dirname, "test-data");
-        const result = testResultsSummary.getTestResults(emptyDir, "");
+        const result = testResultsSummary.getTestResults(emptyDir, "", workspace);
         expect(result).toBeNull();
     });
 
     it("should return null when directory does not exist", () => {
         const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
-        const result = testResultsSummary.getTestResults("/nonexistent/directory/path", "");
+        const result = testResultsSummary.getTestResults(
+            "/nonexistent/directory/path",
+            "",
+            workspace,
+        );
         expect(result).toBeNull();
         expect(consoleSpy).toHaveBeenCalled();
         expect(consoleSpy.mock.calls[0][0] as string).toContain(
             "An error occurred while finding test results summary file(s) in directory",
         );
         consoleSpy.mockRestore();
+    });
+});
+
+describe("actionName Filtering Tests", () => {
+    it("should only pick up files matching the given actionName", () => {
+        const sourceFilePath = getTestDataSource(
+            "t1",
+            "matlabTestResults_20250101_100000_001.json",
+        );
+
+        const matchingFile = path.join(
+            runnerTemp,
+            "matlabTestResultsmy-action_20250101_100000_001.json",
+        );
+        const nonMatchingFile = path.join(
+            runnerTemp,
+            "matlabTestResultsother-action_20250101_100000_001.json",
+        );
+
+        try {
+            fs.copyFileSync(sourceFilePath, matchingFile);
+            fs.copyFileSync(sourceFilePath, nonMatchingFile);
+
+            const result = testResultsSummary.getTestResults(runnerTemp, "my-action", workspace);
+
+            expect(result).not.toBeNull();
+            expect(result!.TestSessions.length).toBe(1);
+            expect(result!.TestSessions[0].FileName).toBe(
+                "matlabTestResultsmy-action_20250101_100000_001.json",
+            );
+        } finally {
+            safeDelete(matchingFile);
+            safeDelete(nonMatchingFile);
+        }
+    });
+
+    it("should return null when no files match the actionName", () => {
+        const sourceFilePath = getTestDataSource(
+            "t1",
+            "matlabTestResults_20250101_100000_001.json",
+        );
+
+        const nonMatchingFile = path.join(
+            runnerTemp,
+            "matlabTestResultsother-action_20250101_100000_001.json",
+        );
+
+        try {
+            fs.copyFileSync(sourceFilePath, nonMatchingFile);
+
+            const result = testResultsSummary.getTestResults(
+                runnerTemp,
+                "nonexistent-action",
+                workspace,
+            );
+
+            expect(result).toBeNull();
+        } finally {
+            safeDelete(nonMatchingFile);
+        }
     });
 });
 
@@ -595,19 +648,15 @@ describe("Error Handling Tests", () => {
     it("should handle JSON parsing errors gracefully", () => {
         const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-        const runnerTemp = path.join(import.meta.dirname, "..");
-
-        // Create a file with invalid JSON matching the new naming pattern
         const invalidJsonPath = path.join(runnerTemp, "matlabTestResults_20250101_100000_097.json");
         fs.writeFileSync(invalidJsonPath, "{ invalid json content");
 
         try {
-            const result = testResultsSummary.getTestResults(runnerTemp, "");
+            const result = testResultsSummary.getTestResults(runnerTemp, "", "");
             expect(result).not.toBeNull();
             expect(result!.TestSessions.length).toBe(0);
             expect(result!.OverallStats.Total).toBe(0);
 
-            // Verify error was logged
             expect(consoleSpy).toHaveBeenCalledWith(
                 expect.stringContaining(
                     "An error occurred while reading the test results summary file",
@@ -615,10 +664,7 @@ describe("Error Handling Tests", () => {
                 expect.any(Error),
             );
         } finally {
-            // Clean up
-            if (nodeFs.existsSync(invalidJsonPath)) {
-                nodeFs.unlinkSync(invalidJsonPath);
-            }
+            safeDelete(invalidJsonPath);
             consoleSpy.mockRestore();
         }
     });
@@ -626,26 +672,20 @@ describe("Error Handling Tests", () => {
     it("should handle file deletion errors gracefully", () => {
         const consoleSpy = jest.spyOn(console, "error").mockImplementation(() => {});
 
-        // Set up the mock to throw an error for this test
         mockUnlinkSync.mockImplementationOnce(() => {
             throw new Error("Permission denied - cannot delete file");
         });
 
-        const runnerTemp = path.join(import.meta.dirname, "..");
-
-        // Create a valid JSON file matching the new naming pattern
         const validJsonPath = path.join(runnerTemp, "matlabTestResults_20250101_100000_096.json");
-        fs.writeFileSync(validJsonPath, "[]"); // Empty array - valid JSON
+        fs.writeFileSync(validJsonPath, "[]");
 
         try {
-            const result = testResultsSummary.getTestResults(runnerTemp, "");
+            const result = testResultsSummary.getTestResults(runnerTemp, "", "");
 
-            // Should still return results even if deletion fails
             expect(result).not.toBeNull();
             expect(result!.TestSessions.length).toBe(1);
             expect(result!.TestSessions[0].TestResults).toEqual([]);
 
-            // Verify deletion error was logged
             expect(consoleSpy).toHaveBeenCalledWith(
                 expect.stringContaining(
                     "An error occurred while trying to delete the test results summary file",
@@ -653,19 +693,11 @@ describe("Error Handling Tests", () => {
                 expect.any(Error),
             );
 
-            // Verify unlinkSync was called
             expect(mockUnlinkSync).toHaveBeenCalledWith(validJsonPath);
         } finally {
-            // Clean up
             mockUnlinkSync.mockReset();
             consoleSpy.mockRestore();
-
-            // Clean up the test file using real fs
-            try {
-                nodeFs.unlinkSync(validJsonPath);
-            } catch (e) {
-                // Ignore cleanup errors
-            }
+            safeDelete(validJsonPath);
         }
     });
 });
@@ -677,45 +709,6 @@ describe("Data Processing Edge Cases", () => {
             ? TC
             : never
         : never;
-
-    function getOSInfoHelper() {
-        const platform = os.platform().toLowerCase();
-        if (platform.includes("win") && !platform.includes("darwin"))
-            return { osName: "windows", workspaceParent: "C:\\" };
-        if (platform.includes("linux") || platform.includes("unix") || platform.includes("aix"))
-            return { osName: "linux", workspaceParent: "/home/user/" };
-        if (platform.includes("darwin"))
-            return { osName: "mac", workspaceParent: "/Users/username/" };
-        throw new Error(`Unsupported OS: ${platform}`);
-    }
-
-    function copyTestDataAndRun(testFolder: string, sourceFileName: string, destFileName: string) {
-        const runnerTemp = path.join(import.meta.dirname, "..");
-        const osInfo = getOSInfoHelper();
-        const workspace = path.join(osInfo.workspaceParent, "workspace");
-
-        const sourceFilePath = path.join(
-            import.meta.dirname,
-            "test-data",
-            "testResultsArtifacts",
-            testFolder,
-            osInfo.osName,
-            sourceFileName,
-        );
-        const destPath = path.join(runnerTemp, destFileName);
-        fs.copyFileSync(sourceFilePath, destPath);
-
-        const result = testResultsSummary.getTestResults(runnerTemp, workspace);
-
-        // Clean up since unlinkSync is mocked
-        try {
-            nodeFs.unlinkSync(destPath);
-        } catch (e) {
-            /* ignore */
-        }
-
-        return result;
-    }
 
     it("should handle single object JSON (non-array test artifact)", () => {
         const result = copyTestDataAndRun(
