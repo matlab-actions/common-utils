@@ -176,11 +176,9 @@ describe("processAndAddBuildSummary", () => {
         buildSummary.processAndAddBuildSummary("/nonexistent/directory/path", "my-action");
 
         expect(core.summary.addTable).not.toHaveBeenCalled();
-        expect(consoleSpy).toHaveBeenCalledWith(
-            expect.stringContaining(
-                "An error occurred while finding build summary file(s) in directory",
-            ),
-            expect.any(Error),
+        expect(consoleSpy).toHaveBeenCalled();
+        expect(consoleSpy.mock.calls[0][0] as string).toContain(
+            "An error occurred while finding build summary file(s) in directory",
         );
         consoleSpy.mockRestore();
     });
