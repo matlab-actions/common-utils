@@ -68,7 +68,12 @@ export interface TestResultsData {
     OverallStats: TestStatistics;
 }
 
-export function processAndAddTestSummary(runnerTemp: string, runId: string, actionName: string, workspace: string) {
+export function processAndAddTestSummary(
+    runnerTemp: string,
+    runId: string,
+    actionName: string,
+    workspace: string,
+) {
     const testResultsData = getTestResults(runnerTemp, actionName, workspace);
     const coverageResultsData = getCoverageResults(runnerTemp, runId);
     if (testResultsData || coverageResultsData) {
@@ -76,7 +81,11 @@ export function processAndAddTestSummary(runnerTemp: string, runId: string, acti
     }
 }
 
-export function getTestResults(runnerTemp: string, actionName: string, workspace: string): TestResultsData | null {
+export function getTestResults(
+    runnerTemp: string,
+    actionName: string,
+    workspace: string,
+): TestResultsData | null {
     let testResultsData = null;
     const filePrefix = `matlabTestResults${actionName}_`;
     const fileSuffix = `.json`;
