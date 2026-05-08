@@ -68,17 +68,17 @@ export interface TestResultsData {
     OverallStats: TestStatistics;
 }
 
-export function processAndAddTestSummary(runnerTemp: string, runId: string, workspace: string) {
-    const testResultsData = getTestResults(runnerTemp, workspace);
+export function processAndAddTestSummary(runnerTemp: string, runId: string, actionName: string, workspace: string) {
+    const testResultsData = getTestResults(runnerTemp, actionName, workspace);
     const coverageResultsData = getCoverageResults(runnerTemp, runId);
     if (testResultsData || coverageResultsData) {
         addSummary(testResultsData, coverageResultsData);
     }
 }
 
-export function getTestResults(runnerTemp: string, workspace: string): TestResultsData | null {
+export function getTestResults(runnerTemp: string, actionName: string, workspace: string): TestResultsData | null {
     let testResultsData = null;
-    const filePrefix = `matlabTestResults_`;
+    const filePrefix = `matlabTestResults${actionName}_`;
     const fileSuffix = `.json`;
 
     // Find all test result files matching the pattern
