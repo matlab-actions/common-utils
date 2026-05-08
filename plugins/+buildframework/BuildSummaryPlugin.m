@@ -10,13 +10,15 @@ classdef BuildSummaryPlugin < matlab.buildtool.plugins.BuildRunnerPlugin
         function runTaskGraph(plugin, pluginData)
             runTaskGraph@matlab.buildtool.plugins.BuildRunnerPlugin(plugin, pluginData);
 
-            [fID, msg] = fopen(fullfile(getenv("RUNNER_TEMP") ,"buildSummary" + getenv("GITHUB_RUN_ID") + ".json"), "w");
-            if fID == -1
-                warning("buildframework:BuildSummaryPlugin:UnableToOpenFile","Unable to open a file required to create the MATLAB build summary table: %s", msg);
-            else
-                closeFile = onCleanup(@()fclose(fID));
-                s = jsonencode(plugin.TaskDetails);
-                fprintf(fID, "%s",s);
+            if strcmpi(getenv("MW_GENERATE_JOB_SUMMARY"), "true")
+                [fID, msg] = fopen(fullfile(getenv("RUNNER_TEMP"), "buildSummary" + getenv("GITHUB_ACTION") + "_" + string(datetime('now', 'Format', 'yyyyMMdd_HHmmss_SSS')) + ".json"), "w");
+                if fID == -1
+                    warning("buildframework:BuildSummaryPlugin:UnableToOpenFile","Unable to open a file required to create the MATLAB build summary table: %s", msg);
+                else
+                    closeFile = onCleanup(@()fclose(fID));
+                    s = jsonencode(plugin.TaskDetails);
+                    fprintf(fID, "%s",s);
+                end
             end
         end
 
