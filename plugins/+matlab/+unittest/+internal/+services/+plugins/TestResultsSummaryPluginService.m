@@ -4,7 +4,7 @@ classdef TestResultsSummaryPluginService < matlab.buildtool.internal.services.ci
     methods
         function plugins = providePlugins(~, ~)
             % Check if MATLAB Test license is available
-            if strcmpi(getenv("MW_GENERATE_JOB_SUMMARY"), "true") && license('test', 'matlab_test')
+            if strcmpi(getenv("MW_GENERATE_SUMMARY"), "true") && license('test', 'matlab_test')
                 plugins = testframework.TestResultsSummaryPlugin();
             else
                 plugins = matlab.unittest.plugins.TestRunnerPlugin.empty(1,0);

@@ -11,7 +11,7 @@ plugins = [ ...
     buildframework.GitHubLogPlugin() ...
 ];
 
-if strcmpi(getenv("MW_GENERATE_JOB_SUMMARY"), "true")
+if strcmpi(getenv("MW_GENERATE_SUMMARY"), "true")
     if isMATLABReleaseOlderThan("R2026a")
         reportPlugin = buildframework.BuildSummaryPlugin();
     else

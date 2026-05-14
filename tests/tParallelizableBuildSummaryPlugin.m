@@ -24,7 +24,7 @@ classdef tParallelizableBuildSummaryPlugin < matlab.unittest.TestCase
 
             testCase.applyFixture(WorkingFolderFixture);
             testCase.TempFolder = pwd();
-            testCase.applyFixture(EnvironmentVariableFixture("MW_GENERATE_JOB_SUMMARY", "true"));
+            testCase.applyFixture(EnvironmentVariableFixture("MW_GENERATE_SUMMARY", "true"));
             testCase.applyFixture(EnvironmentVariableFixture("GITHUB_ACTION", "my-action"));
 
             testCase.Plugin = ParallelizableBuildSummaryPlugin(TempFolder=testCase.TempFolder);
