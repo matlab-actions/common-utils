@@ -89,6 +89,7 @@ export function getTestResults(
     const filePrefix = `matlabTestResults${actionName}_`;
     const fileSuffix = `.json`;
 
+    // Find all test result files matching the pattern
     let testResultFiles: string[] = [];
     try {
         testResultFiles = readdirSync(runnerTemp)
