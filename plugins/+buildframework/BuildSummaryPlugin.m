@@ -1,6 +1,6 @@
 classdef BuildSummaryPlugin < matlab.buildtool.plugins.BuildRunnerPlugin
 
-%   Copyright 2024-25 The MathWorks, Inc.
+%   Copyright 2024-26 The MathWorks, Inc.
 
     properties (Access=private)
         TaskDetails = {};
