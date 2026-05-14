@@ -1,7 +1,7 @@
-// Copyright 2024-25 The MathWorks, Inc.
+// Copyright 2024-26 The MathWorks, Inc.
 import * as core from "@actions/core";
 import { join } from "path";
-import { readFileSync, unlinkSync, existsSync } from "fs";
+import { readFileSync, unlinkSync, readdirSync } from "fs";
 
 export function addSummary(taskSummaryTableRows: string[][]) {
     try {
@@ -43,7 +43,27 @@ export function interpretSkipReason(skipReason: string) {
     }
 }
 
-export function processAndAddBuildSummary(runnerTemp: string, runId: string) {
+export function processAndAddBuildSummary(runnerTemp: string, actionName: string) {
+    const filePrefix = `buildSummary${actionName}_`;
+    const fileSuffix = `.json`;
+
+    let buildSummaryFiles: string[] = [];
+    try {
+        buildSummaryFiles = readdirSync(runnerTemp)
+            .filter((file) => file.startsWith(filePrefix) && file.endsWith(fileSuffix))
+            .sort();
+    } catch (e) {
+        console.error(
+            `An error occurred while finding build summary file(s) in directory ${runnerTemp}:`,
+            e,
+        );
+        return;
+    }
+
+    if (buildSummaryFiles.length === 0) {
+        return;
+    }
+
     const header = [
         { data: "MATLAB Task", header: true },
         { data: "Status", header: true },
@@ -51,16 +71,15 @@ export function processAndAddBuildSummary(runnerTemp: string, runId: string) {
         { data: "Duration (HH:mm:ss)", header: true },
     ];
 
-    const filePath: string = join(runnerTemp, `buildSummary${runId}.json`);
-    let taskSummaryTable;
-    if (existsSync(filePath)) {
+    for (const fileName of buildSummaryFiles) {
+        const filePath = join(runnerTemp, fileName);
         try {
             const buildSummary = readFileSync(filePath, { encoding: "utf8" });
             const rows = getSummaryRows(buildSummary);
-            taskSummaryTable = [header, ...rows];
+            const taskSummaryTable = [header, ...rows];
+            addSummary(taskSummaryTable);
         } catch (e) {
             console.error("An error occurred while reading the build summary file:", e);
-            return;
         } finally {
             try {
                 unlinkSync(filePath);
@@ -71,6 +90,5 @@ export function processAndAddBuildSummary(runnerTemp: string, runId: string) {
                 );
             }
         }
-        addSummary(taskSummaryTable);
     }
 }

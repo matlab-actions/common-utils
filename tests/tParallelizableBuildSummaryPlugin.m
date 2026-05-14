@@ -20,9 +20,12 @@ classdef tParallelizableBuildSummaryPlugin < matlab.unittest.TestCase
     methods (TestMethodSetup)
         function createPlugin(testCase)
             import matlab.unittest.fixtures.WorkingFolderFixture;
-            
+            import matlab.unittest.fixtures.EnvironmentVariableFixture;
+
             testCase.applyFixture(WorkingFolderFixture);
             testCase.TempFolder = pwd();
+            testCase.applyFixture(EnvironmentVariableFixture("MW_GENERATE_JOB_SUMMARY", "true"));
+            testCase.applyFixture(EnvironmentVariableFixture("GITHUB_ACTION", "my-action"));
 
             testCase.Plugin = ParallelizableBuildSummaryPlugin(TempFolder=testCase.TempFolder);
             testCase.Runner = matlab.buildtool.BuildRunner.withNoPlugins();
@@ -38,8 +41,8 @@ classdef tParallelizableBuildSummaryPlugin < matlab.unittest.TestCase
 
             testCase.Runner.run(plan, ["t1", "t2"]);
 
-            name = "buildSummary" + getenv("GITHUB_RUN_ID") + ".json";
-            testCase.verifyTrue(isfile(fullfile(testCase.TempFolder, name)));
+            f = findBuildSummaryFile(testCase.TempFolder);
+            testCase.verifyNotEmpty(f);
         end
 
         function runningBuildCreatesSummaryArtifactWithExpectedTasks(testCase)
@@ -49,9 +52,8 @@ classdef tParallelizableBuildSummaryPlugin < matlab.unittest.TestCase
 
             testCase.Runner.run(plan, ["t1", "t2"]);
 
-            name = "buildSummary" + getenv("GITHUB_RUN_ID") + ".json";
-            f = fullfile(testCase.TempFolder, name);
-            testCase.assertTrue(isfile(f));
+            f = findBuildSummaryFile(testCase.TempFolder);
+            testCase.assertTrue(~isempty(f));
 
             s = readstruct(f);
 
@@ -67,9 +69,8 @@ classdef tParallelizableBuildSummaryPlugin < matlab.unittest.TestCase
 
             testCase.Runner.run(plan, ["t1", "t2"]);
 
-            name = "buildSummary" + getenv("GITHUB_RUN_ID") + ".json";
-            f = fullfile(testCase.TempFolder, name);
-            testCase.assertTrue(isfile(f));
+            f = findBuildSummaryFile(testCase.TempFolder);
+            testCase.assertTrue(~isempty(f));
 
             s = readstruct(f);
 
@@ -88,10 +89,8 @@ classdef tParallelizableBuildSummaryPlugin < matlab.unittest.TestCase
 
             testCase.Runner.run(plan, "g:t");
 
-            name = "buildSummary" + getenv("GITHUB_RUN_ID") + ".json";
-            f = fullfile(testCase.TempFolder, name);
-
-            testCase.assertTrue(isfile(f));
+            f = findBuildSummaryFile(testCase.TempFolder);
+            testCase.assertTrue(~isempty(f));
 
             s = readstruct(f);
 
@@ -108,4 +107,13 @@ end
 
 function task = Task(varargin)
 task = matlab.buildtool.Task(varargin{:});
+end
+
+function f = findBuildSummaryFile(folder)
+files = dir(fullfile(folder, "buildSummary*.json"));
+if isempty(files)
+    f = "";
+else
+    f = fullfile(folder, files(1).name);
+end
 end
