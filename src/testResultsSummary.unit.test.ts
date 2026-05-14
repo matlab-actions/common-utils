@@ -653,9 +653,7 @@ describe("Error Handling Tests", () => {
 
         try {
             const result = testResultsSummary.getTestResults(runnerTemp, "", "");
-            expect(result).not.toBeNull();
-            expect(result!.TestSessions.length).toBe(0);
-            expect(result!.OverallStats.Total).toBe(0);
+            expect(result).toBeNull();
 
             expect(consoleSpy).toHaveBeenCalledWith(
                 expect.stringContaining(

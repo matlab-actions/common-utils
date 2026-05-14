@@ -86,7 +86,6 @@ export function getTestResults(
     actionName: string,
     workspace: string,
 ): TestResultsData | null {
-    let testResultsData = null;
     const filePrefix = `matlabTestResults${actionName}_`;
     const fileSuffix = `.json`;
 
@@ -118,12 +117,6 @@ export function getTestResults(
         Duration: 0,
     };
 
-    testResultsData = {
-        TestSessions: testSessions,
-        OverallStats: overallStats,
-    };
-
-    // Process each test result file
     for (const fileName of testResultFiles) {
         const resultsPath = path.join(runnerTemp, fileName);
 
@@ -140,21 +133,18 @@ export function getTestResults(
             };
 
             const map = new Map<string, MatlabTestFile>();
-
             const testCases = Array.isArray(testArtifact) ? testArtifact : [testArtifact];
 
             for (const jsonTestCase of testCases) {
                 processTestCase(sessionResults, jsonTestCase, map, sessionStats, workspace);
             }
 
-            // Add this session to the list
             testSessions.push({
                 FileName: fileName,
                 TestResults: sessionResults,
                 Stats: sessionStats,
             });
 
-            // Update overall stats
             overallStats.Total += sessionStats.Total;
             overallStats.Passed += sessionStats.Passed;
             overallStats.Failed += sessionStats.Failed;
@@ -178,7 +168,11 @@ export function getTestResults(
         }
     }
 
-    return testResultsData;
+    if (testSessions.length === 0) {
+        return null;
+    }
+
+    return { TestSessions: testSessions, OverallStats: overallStats };
 }
 export function addSummary(
     testResultsData: TestResultsData | null,
