@@ -6,15 +6,17 @@ arguments
     pluginProviderData (1,1) struct = struct();
 end
 
-if isMATLABReleaseOlderThan("R2026a")
-    reportPlugin = buildframework.BuildSummaryPlugin();
-else
-    reportPlugin = buildframework.ParallelizableBuildSummaryPlugin();
-end
-
 plugins = [ ...
     matlab.buildtool.internal.getFactoryDefaultPlugins(pluginProviderData) ...
     buildframework.GitHubLogPlugin() ...
-    reportPlugin ...
 ];
+
+if strcmpi(getenv("MW_GENERATE_JOB_SUMMARY"), "true")
+    if isMATLABReleaseOlderThan("R2026a")
+        reportPlugin = buildframework.BuildSummaryPlugin();
+    else
+        reportPlugin = buildframework.ParallelizableBuildSummaryPlugin();
+    end
+    plugins = [plugins reportPlugin];
+end
 end
