@@ -58,7 +58,11 @@ describe("script generation", () => {
 });
 
 describe("run command", () => {
-    const helperScript = { dir: "/home/sweet/home", command: "disp('hello, world');" };
+    const helperScript = {
+        dir: "/home/sweet/home",
+        command: "disp('hello, world');",
+        userCommand: "disp('hello, world');",
+    };
     const platform = "win32";
     const architecture = "x64";
 

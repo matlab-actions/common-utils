@@ -4,6 +4,7 @@
 export interface HelperScript {
     dir: string;
     command: string;
+    userCommand: string;
 }
 /**
  * Type of a function that executes a command on a runner and returns the error

@@ -12,6 +12,7 @@ import * as script from "./script.js";
 export interface HelperScript {
     dir: string;
     command: string;
+    userCommand: string;
 }
 
 /**
@@ -40,6 +41,7 @@ export async function generateScript(workspaceDir: string, command: string): Pro
     return {
         dir: temporaryDirectory,
         command: scriptName,
+        userCommand: command,
     };
 }
 
