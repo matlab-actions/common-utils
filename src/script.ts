@@ -10,8 +10,15 @@ import * as path from "path";
  * @returns MATLAB command.
  */
 export function prepare(command: string): string {
+    return prefix() + command;
+}
+
+/**
+ * Return the boilerplate prefix that `prepare` inserts before the user command.
+ */
+export function prefix(): string {
     const pluginsPath = path.join(import.meta.dirname, "plugins").replaceAll("'", "''");
-    return `cd(getenv('MW_ORIG_WORKING_FOLDER')); ` + `addpath('` + pluginsPath + `'); ` + command;
+    return `cd(getenv('MW_ORIG_WORKING_FOLDER')); addpath('${pluginsPath}'); `;
 }
 
 /**
