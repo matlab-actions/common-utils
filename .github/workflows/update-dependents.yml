@@ -9,6 +9,9 @@ on:
         description: "Release version to update dependents"
         required: true
 
+permissions:
+  contents: read
+
 jobs:
   update-dependents:
     name: Update ${{ matrix.repo }}
