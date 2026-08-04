@@ -14,11 +14,11 @@ jobs:
           - os: windows-latest
           - os: macos-latest
     steps:
-      - uses: actions/checkout@v6
-      - uses: matlab-actions/setup-matlab@v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: matlab-actions/setup-matlab@a0180c939fb1a28de13f44f7b778b912384ced1f # v3.0.1
         with:
           release: latest
-      - uses: matlab-actions/run-tests@v3
+      - uses: matlab-actions/run-tests@ae0e80cb44fdec28d35d0831d8acf38ee4fdf91a # v3.2.0
         with:
           source-folder: plugins
 
@@ -26,8 +26,8 @@ jobs:
     name: Build and Test
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 24
       - name: Perform npm tasks
