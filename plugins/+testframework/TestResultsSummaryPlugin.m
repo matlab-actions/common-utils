@@ -2,6 +2,12 @@ classdef TestResultsSummaryPlugin < matlab.unittest.plugins.TestRunnerPlugin & .
         matlab.unittest.plugins.Parallelizable
     % Copyright 2025-26 The MathWorks, Inc.
 
+    methods
+        function tf = supportsParallelThreadPool_(~)
+            tf = true;
+        end
+    end
+
     methods (Access=protected)
         function reportFinalizedSuite(plugin, pluginData)
             % Invoke the superclass method
