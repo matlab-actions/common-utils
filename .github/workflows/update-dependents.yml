@@ -1,0 +1,71 @@
+name: Update Dependent Repos
+
+on:
+  release:
+    types: published
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version to update dependents"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  update-dependents:
+    name: Update ${{ matrix.repo }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - matlab-actions/run-command
+          - matlab-actions/run-tests
+          - matlab-actions/run-build
+    steps:
+      - name: Checkout dependent repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ matrix.repo }}
+          token: ${{ secrets.REPOS_ACCESS_TOKEN }}
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 24
+
+      - name: Update common-utils dependency
+        run: |
+          NEW_VERSION="${{ github.event.release.tag_name || inputs.version }}"
+
+          # Update the dependency reference in package.json
+          sed -i "s|\"common-utils\": \"github:matlab-actions/common-utils#.*\"|\"common-utils\": \"github:matlab-actions/common-utils#${NEW_VERSION}\"|" package.json
+
+          # Regenerate package-lock.json with the new version
+          npm install --package-lock-only
+
+      - name: Commit and push changes
+        run: |
+          VERSION="${{ github.event.release.tag_name || inputs.version }}"
+          BRANCH="update-common-utils-${VERSION}"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${BRANCH}"
+          git add package.json package-lock.json
+          git commit -m "Bump common-utils to ${VERSION}"
+          git push origin "${BRANCH}"
+
+      - name: Create pull request
+        env:
+          GH_TOKEN: ${{ secrets.REPOS_ACCESS_TOKEN }}
+        run: |
+          VERSION="${{ github.event.release.tag_name || inputs.version }}"
+          BRANCH="update-common-utils-${VERSION}"
+
+          gh pr create \
+            --repo ${{ matrix.repo }} \
+            --base main \
+            --head "${BRANCH}" \
+            --title "Bump common-utils to ${VERSION}" \
+            --body "Automated PR to update \`common-utils\` dependency to [${VERSION}](https://github.com/matlab-actions/common-utils/releases/tag/${VERSION})."
