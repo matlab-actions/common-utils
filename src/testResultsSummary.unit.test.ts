@@ -520,6 +520,45 @@ describe("Multiple Sessions Tests", () => {
     });
 });
 
+describe("Parallel Session Tests", () => {
+    let testResultsData: TestResultsData | null;
+
+    beforeAll(() => {
+        const sourceFilePath = getTestDataSource(
+            "t1",
+            "matlabTestResults_20250101_100000_001.json",
+        );
+
+        // Simulate two parallel workers that finalized in the same
+        // millisecond: identical timestamp, distinct unique token. Each must
+        // be read as a separate session rather than overwriting the other.
+        const dest1 = path.join(runnerTemp, "matlabTestResults_20250101_100000_001_a1b2c3d4.json");
+        const dest2 = path.join(runnerTemp, "matlabTestResults_20250101_100000_001_e5f6a7b8.json");
+
+        try {
+            fs.copyFileSync(sourceFilePath, dest1);
+            fs.copyFileSync(sourceFilePath, dest2);
+        } catch (err) {
+            console.error("Error copying test-data:", err);
+        }
+
+        testResultsData = testResultsSummary.getTestResults(runnerTemp, "", workspace);
+
+        safeDelete(dest1);
+        safeDelete(dest2);
+    });
+
+    it("should treat same-timestamp files with distinct tokens as separate sessions", () => {
+        expect(testResultsData).not.toBeNull();
+        expect(testResultsData!.TestSessions.length).toBe(2);
+    });
+
+    it("should not drop results when session timestamps collide", () => {
+        const overallStats = testResultsData!.OverallStats;
+        expect(overallStats.Total).toBe(20);
+    });
+});
+
 describe("No Results Tests", () => {
     it("should return null when no matching files exist", () => {
         const emptyDir = path.join(import.meta.dirname, "test-data");

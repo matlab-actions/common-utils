@@ -10,7 +10,6 @@ interface CoverageMetric {
 }
 
 export interface CoverageData {
-    MetricLevel?: string;
     FunctionCoverage?: CoverageMetric;
     StatementCoverage?: CoverageMetric;
     DecisionCoverage?: CoverageMetric;

@@ -44,7 +44,6 @@ describe("Coverage Data Retrieval Tests", () => {
     it("should return coverage data when file exists with valid data", () => {
         const mockCoverageData = [
             {
-                MetricLevel: "statement",
                 StatementCoverage: {
                     Executed: 80,
                     Total: 100,
@@ -76,7 +75,6 @@ describe("Coverage Data Retrieval Tests", () => {
     it("should return the last element when multiple coverage data entries exist", () => {
         const mockCoverageData = [
             {
-                MetricLevel: "statement",
                 StatementCoverage: {
                     Executed: 70,
                     Total: 100,
@@ -84,7 +82,6 @@ describe("Coverage Data Retrieval Tests", () => {
                 },
             },
             {
-                MetricLevel: "decision",
                 DecisionCoverage: {
                     Executed: 90,
                     Total: 100,
@@ -183,7 +180,6 @@ describe("Coverage Table HTML Generation Tests", () => {
 
     it("should generate HTML table with all coverage metrics", () => {
         const mockCoverageData = {
-            MetricLevel: "all",
             FunctionCoverage: {
                 Executed: 15,
                 Total: 20,
@@ -255,7 +251,6 @@ describe("Coverage Table HTML Generation Tests", () => {
 
     it("should generate HTML table with only statement coverage", () => {
         const mockCoverageData = {
-            MetricLevel: "statement",
             StatementCoverage: {
                 Executed: 85,
                 Total: 100,
@@ -288,7 +283,6 @@ describe("Coverage Table HTML Generation Tests", () => {
 
     it("should generate HTML table with multiple but not all coverage metrics", () => {
         const mockCoverageData = {
-            MetricLevel: "partial",
             StatementCoverage: {
                 Executed: 80,
                 Total: 100,
